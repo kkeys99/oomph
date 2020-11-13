@@ -1,5 +1,15 @@
+class UnboundVariable(Exception):
+    """
+    Exception raised when variable is not found
+    """
+
+    def __init__(self, var):
+        self.message = "Variable {} not found".format(var)
+
+
 class AExp:
-    pass
+    def eval(self, env):
+        pass
 
 
 class Int(AExp):
@@ -7,11 +17,20 @@ class Int(AExp):
         assert type(val) == int
         self.value = val
 
+    def eval(self, env):
+        return self.value
+
 
 class Var(AExp):
     def __init__(self, var):
         assert type(var) == str
         self.name = var
+
+    def eval(self, env):
+        try:
+            return env[self.name]
+        except KeyError:
+            raise UnboundVariable(self.name)
 
 
 class BinAExp(AExp):
@@ -22,31 +41,41 @@ class BinAExp(AExp):
 
 
 class Plus(BinAExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 + n2
 
 
 class Minus(BinAExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 * n2
 
 
 class Times(BinAExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 - n2
 
 
 class Input(AExp):
-    pass
+    def eval(self, env):
+        return int(input(">"))
 
 
 class BExp:
-    pass
+    def eval(self, env):
+        pass
 
 
 class BTrue(BExp):
-    pass
+    def eval(self, env):
+        return True
 
 
 class BFalse(BExp):
-    pass
+    def eval(self, env):
+        return False
 
 
 class BinCmpExp(BExp):
@@ -57,33 +86,48 @@ class BinCmpExp(BExp):
 
 
 class Equals(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 == n2
 
 
 class NotEquals(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 != n2
 
 
 class Less(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 < n2
 
 
 class LessEq(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 <= n2
 
 
 class Greater(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 > n2
 
 
 class GreaterEq(BinCmpExp):
-    pass
+    def eval(self, env):
+        n1, n2 = self.left.eval(env), self.right.eval(env)
+        return n1 >= n2
 
 
 class Not(BExp):
     def __init__(self, b):
         assert isinstance(b, BExp)
         self.bexp = b
+
+    def eval(self, env):
+        return not self.bexp.eval(env)
 
 
 class BinBExp(BExp):
@@ -94,19 +138,24 @@ class BinBExp(BExp):
 
 
 class And(BinBExp):
-    pass
+    def eval(self, env):
+        # Can't bind variables and still short circuit
+        return self.left.eval(env) and self.right.eval(env)
 
 
 class Or(BinBExp):
-    pass
+    def eval(self, env):
+        return self.left.eval(env) or self.right.eval(env)
 
 
 class Command:
-    pass
+    def eval(self, env):
+        pass
 
 
 class Skip(Command):
-    pass
+    def eval(self, env):
+        return env
 
 
 class Assign(Command):
@@ -115,12 +164,20 @@ class Assign(Command):
         self.var = var
         self.aexp = aexp
 
+    def eval(self, env):
+        env[self.var.name] = self.aexp.eval(env)
+        return env
+
 
 class Seq(Command):
     def __init__(self, c1, c2):
         assert isinstance(c1, Command) and isinstance(c2, Command)
         self.left = c1
         self.right = c2
+
+    def eval(self, env):
+        env = self.left.eval(env)
+        return self.right.eval(env)
 
 
 class If(Command):
@@ -130,6 +187,11 @@ class If(Command):
         self.beq = c1
         self.bneq = c2
 
+    def eval(self, env):
+        if self.beq.eval(env):
+            return self.beq.eval(env)
+        return self.bneq.eval(env)
+
 
 class While(Command):
     def __init__(self, bexp, c):
@@ -137,17 +199,31 @@ class While(Command):
         self.guard = bexp
         self.loop = c
 
+    def eval(self, env):
+        if self.guard.eval(env):
+            env = self.loop.eval(env)
+            return self.eval(env)
+        return env
+
 
 class Print(Command):
     def __init__(self, aexp):
         assert isinstance(aexp, AExp)
         self.aexp = aexp
 
+    def eval(self, env):
+        print(self.aexp.eval(env))
+        return env
+
 
 class Test(Command):
     def __init__(self, bexp):
         assert isinstance(bexp, BExp)
         self.bexp = bexp
+
+    def eval(self, env):
+        assert self.bexp.eval(env)
+        return env
 
 
 class Break(Command):
