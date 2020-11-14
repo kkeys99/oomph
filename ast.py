@@ -102,13 +102,13 @@ class Plus(BinExp):
 class Minus(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
-        return n1 * n2, env
+        return n1 - n2, env
 
 
 class Times(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
-        return n1 - n2, env
+        return n1 * n2, env
 
 
 class Input(Expr):
