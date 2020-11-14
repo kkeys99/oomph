@@ -5,10 +5,18 @@ import oomphlex
 tokens = oomphlex.tokens
 
 precedence = (
-     ('left', 'PLUS', 'MINUS'),
-     ('left', 'TIMES'),
-     ('left', 'OR', 'AND'),
-     # ('right', 'UMINUS'),            # Unary minus operator
+    ('nonassoc', 'ELSE', 'DO'),
+    ('left', 'SEMI'),
+    ('nonassoc', 'ASSIGN'),
+    ('left', 'OR'),
+    ('left', 'AND'),
+    ('left', 'EQUALS', 'NOTEQUALS'),
+    ('left', 'LESS', 'LESSEQ', 'GREATER', 'GREATEREQ'),
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES'),
+    ('right', 'NOT'),
+    ('right', 'PRINT', 'TEST'),
+    # ('right', 'UMINUS'),            # Unary minus operator
  )
 
 
@@ -19,11 +27,11 @@ def p_program(p):
 
 
 # Arithmetic Expressions
-def p_a_aexp(p):
+def p_c_aexp(p):
     '''
-    a : a PLUS a
-      | a MINUS a
-      | a TIMES a
+    c : c PLUS c
+      | c MINUS c
+      | c TIMES c
     '''
     if p[2] == '+':
         p[0] = Plus(p[1], p[3])
@@ -33,43 +41,43 @@ def p_a_aexp(p):
         p[0] = Times(p[1], p[3])
 
 
-def p_a_parens(p):
+def p_c_parens(p):
     '''
-    a : LPAREN a RPAREN
+    c : LPAREN c RPAREN
     '''
     p[0] = p[2]
 
 
-def p_a_int(p):
+def p_c_int(p):
     '''
-    a : INT
+    c : INT
     '''
     p[0] = Int(p[1])
 
 
-def p_a_var(p):
+def p_c_var(p):
     '''
-    a : VAR
+    c : VAR
     '''
     p[0] = Var(p[1])
 
 
-def p_a_input(p):
+def p_c_input(p):
     '''
-    a : INPUT
+    c : INPUT
     '''
     p[0] = Input()
 
 
 # Boolean Expressions
-def p_b_bexp(p):
+def p_c_bexp(p):
     '''
-    b : a EQUALS a
-      | a NOTEQUALS a
-      | a LESS a
-      | a LESSEQ a
-      | a GREATER a
-      | a GREATEREQ a
+    c : c EQUALS c
+      | c NOTEQUALS c
+      | c LESS c
+      | c LESSEQ c
+      | c GREATER c
+      | c GREATEREQ c
     '''
     if p[2] == oomphlex.t_EQUALS:
         p[0] = Equals(p[1], p[3])
@@ -85,17 +93,10 @@ def p_b_bexp(p):
         p[0] = GreaterEq(p[1], p[3])
 
 
-def p_b_parens(p):
+def p_c_binop(p):
     '''
-    b : LPAREN b RPAREN
-    '''
-    p[0] = p[2]
-
-
-def p_b_binop(p):
-    '''
-    b : b OR b
-       | b AND b
+    c : c OR c
+       | c AND c
     '''
     if p[2] == 'and':  # This feels wrong... any better way?
         p[0] = And(p[1], p[3])
@@ -103,16 +104,16 @@ def p_b_binop(p):
         p[0] = Or(p[1], p[3])
 
 
-def p_b_unop(p):
+def p_c_unop(p):
     '''
-    b : NOT b
+    c : NOT c
     '''
     p[0] = Not(p[2])
 
 
-def p_b_const(p):
+def p_c_const(p):
     '''
-    b : TRUE
+    c : TRUE
        | FALSE
     '''
     if p[1] == oomphlex.reserved_map['TRUE']:
@@ -131,14 +132,14 @@ def p_c_seq(p):
 
 def p_c_if(p):
     '''
-    c : IF b THEN c ELSE c
+    c : IF c THEN c ELSE c
     '''
     p[0] = If(p[2], p[4], p[6])
 
 
 def p_c_while(p):
     '''
-    c : WHILE b DO c
+    c : WHILE c DO c
     '''
     p[0] = While(p[2], p[4])
 
@@ -152,17 +153,10 @@ def p_c_skip(p):
     pass
 
 
-def p_c_parens(p):
+def p_c_units(p):
     '''
-    c : LBRACE c RBRACE
-    '''
-    p[0] = p[2]
-
-
-def p_c_unop(p):
-    '''
-    c : PRINT a
-    | TEST b
+    c : PRINT c
+    | TEST c
     '''
     if p[1] == 'print':
         p[0] = Print(p[2])
@@ -172,7 +166,7 @@ def p_c_unop(p):
 
 def p_c_assign(p):
     '''
-    c : VAR ASSIGN a
+    c : VAR ASSIGN c
     '''
     p[0] = Assign(Var(p[1]), p[3])
 

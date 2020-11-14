@@ -16,8 +16,8 @@ tokens = reserved + (
     # Assignment (:=)
     'ASSIGN', 
 
-    # Delimiters ( ) [ ] ;
-    'SEMI', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE',
+    # Delimiters ( ) ;
+    'SEMI', 'LPAREN', 'RPAREN',
 
     # End of file
     'EOF',
@@ -51,8 +51,8 @@ t_ASSIGN           = r':='
 t_SEMI             = r';'
 t_LPAREN           = r'\('
 t_RPAREN           = r'\)'
-t_LBRACE           = r'\['
-t_RBRACE           = r'\]'
+# t_LBRACE           = r'\['
+# t_RBRACE           = r'\]'
 
 # Variables and reserved words
 reserved_map = {}

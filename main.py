@@ -15,7 +15,7 @@ def main():
     # print(prog)
     result = oomphparse.parser.parse(prog)
     # print(result)
-    env = result.eval({})
+    print(result.eval({}))
 
 
 if __name__ == "__main__":
