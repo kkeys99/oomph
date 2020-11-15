@@ -6,11 +6,10 @@ def test():
     tests = os.listdir(testDir)
     tests.sort()
     for filename in tests:
-        print(filename)
         with open(os.path.join(testDir, filename)) as testFile:
             prog = testFile.read()
-        result = oomphparse.parser.parse(prog)
-        print(result.eval({}))
+        _ = oomphparse.parser.parse(prog)
+        print(f'{filename} OK')
 
 
 if __name__ == "__main__":

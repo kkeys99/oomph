@@ -9,7 +9,7 @@ def main():
     parser = yacc.yacc(module=oomphparse)
     env = {}
     while True:
-        text = input(">")
+        text = input("> ")
         if text == "quit()":
             break
         if text == "env()":

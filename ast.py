@@ -255,7 +255,7 @@ class Test(Expr):
     def eval(self, env):
         b = self.exp.eval(env)
         assert b[0], f'Test expression {b} evaluated to false!'
-        return b
+        return (), env
 
 
 class Break(Expr):
