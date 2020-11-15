@@ -7,6 +7,7 @@ tokens = oomphlex.tokens
 precedence = (
     ('nonassoc', 'ELSE', 'DO'),
     ('left', 'SEMI'),
+    ('right', 'COLON'),
     ('nonassoc', 'ASSIGN'),
     ('left', 'OR'),
     ('left', 'AND'),
@@ -46,6 +47,42 @@ def p_c_parens(p):
     c : LPAREN c RPAREN
     '''
     p[0] = p[2]
+
+
+def p_vars_fun(p):
+    '''
+    vars : VAR
+         | VAR COMMA vars
+    '''
+    if len(p) == 2:
+        p[0] = [Var(p[1])]
+    else:
+        p[0] = [Var(p[1])] + p[3]
+
+
+def p_c_func(p):
+    '''
+    c : DEF VAR LPAREN vars RPAREN COLON c
+    '''
+    p[0] = Function(Var(p[2]), p[4], p[7])
+
+
+def p_exps_fun(p):
+    '''
+    exps : c
+         | c COMMA exps
+    '''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = [p[1]] + p[3]
+
+
+def p_c_app(p):
+    '''
+    c : c LPAREN exps RPAREN
+    '''
+    p[0] = App(p[1], p[3])
 
 
 def p_c_int(p):
@@ -100,7 +137,7 @@ def p_c_binop(p):
     '''
     if p[2] == 'and':  # This feels wrong... any better way?
         p[0] = And(p[1], p[3])
-    elif p[2] == 'and':
+    elif p[2] == 'or':
         p[0] = Or(p[1], p[3])
 
 

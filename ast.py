@@ -61,15 +61,19 @@ class Var(Expr):
 
 
 class Function(Expr):
-    def __init__(self, params, exp):
+    def __init__(self, name, params, exp):
         for p in params:
             assert isinstance(p, Var)
+        assert isinstance(name, Var)
         assert isinstance(exp, Expr)
+        self.name = name
         self.args = params
         self.exp = exp
 
     def eval(self, env):
-        return Closure(self.exp, self.args, env), env
+        clos = Closure(self.exp, self.args, env)
+        clos.env[self.name.name] = clos
+        return clos, env
 
 
 class App(Expr):
@@ -81,9 +85,9 @@ class App(Expr):
         self.args = args
 
     def eval(self, env):
-        clos, env = self.func.eval(env)
-        new_env = {k: v.eval(env)[0] for (k, v) in zip(clos.args, self.args)}
-        return clos.eval({**new_env, **env})
+        clos, env1 = self.func.eval(env)
+        env2 = {k.name: v.eval(env)[0] for (k, v) in zip(clos.args, self.args)}
+        return clos.expr.eval({**env2, **env1})[0], env
 
 
 class BinExp(Expr):

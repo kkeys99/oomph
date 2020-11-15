@@ -3,7 +3,7 @@ from ply import lex
 # Reserved words
 reserved = (
     'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'THEN', 'ELSE', 
-    'WHILE', 'DO', 'TEST', 'INPUT', 'PRINT',
+    'WHILE', 'DO', 'TEST', 'INPUT', 'PRINT', 'DEF'
 )
 
 tokens = reserved + (
@@ -16,8 +16,8 @@ tokens = reserved + (
     # Assignment (:=)
     'ASSIGN', 
 
-    # Delimiters ( ) ;
-    'SEMI', 'LPAREN', 'RPAREN',
+    # Delimiters ( ) ; :
+    'SEMI', 'LPAREN', 'RPAREN', 'COLON', 'COMMA',
 
     # End of file
     'EOF',
@@ -48,6 +48,8 @@ t_GREATEREQ        = r'>='
 t_ASSIGN           = r':='
 
 # Delimiters
+t_COMMA            = r','
+t_COLON            = r':'
 t_SEMI             = r';'
 t_LPAREN           = r'\('
 t_RPAREN           = r'\)'
