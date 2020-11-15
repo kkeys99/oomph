@@ -1,0 +1,16 @@
+x := 0;
+test(x = 0);
+x := 2;
+test(x = 2);
+x := -7;
+test(x = -7);
+y := 5;
+test(y = 5);
+x := x + 1;
+test(x = -6);
+y := y + x;
+test(y = -1);
+x := x * -2;
+test(x = 12);
+z := 3 - (5);
+test(z = -2)

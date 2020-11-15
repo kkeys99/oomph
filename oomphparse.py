@@ -5,7 +5,6 @@ import oomphlex
 tokens = oomphlex.tokens
 
 precedence = (
-    ('nonassoc', 'ELSE', 'DO'),
     ('left', 'SEMI'),
     ('right', 'COLON'),
     ('nonassoc', 'ASSIGN'),
@@ -17,13 +16,12 @@ precedence = (
     ('left', 'TIMES'),
     ('right', 'NOT'),
     ('right', 'PRINT', 'TEST'),
-    # ('right', 'UMINUS'),            # Unary minus operator
  )
 
 
 # Programs
 def p_program(p):
-    'p : c EOF'
+    'p : c'
     p[0] = p[1]
 
 
@@ -88,8 +86,12 @@ def p_c_app(p):
 def p_c_int(p):
     '''
     c : INT
+      | MINUS INT
     '''
-    p[0] = Int(p[1])
+    if type(p[1]) == str:
+        p[0] = Int(-p[2])
+    else:
+        p[0] = Int(p[1])
 
 
 def p_c_var(p):
@@ -122,11 +124,11 @@ def p_c_bexp(p):
         p[0] = NotEquals(p[1], p[3])
     elif p[2] == oomphlex.t_LESS:
         p[0] = Less(p[1], p[3])
-    elif p[0] == oomphlex.t_LESSEQ:
+    elif p[2] == oomphlex.t_LESSEQ:
         p[0] = LessEq(p[1], p[3])
-    elif p[0] == oomphlex.t_GREATER:
+    elif p[2] == oomphlex.t_GREATER:
         p[0] = Greater(p[1], p[3])
-    elif p[0] == oomphlex.t_GREATEREQ:
+    elif p[2] == oomphlex.t_GREATEREQ:
         p[0] = GreaterEq(p[1], p[3])
 
 
@@ -153,9 +155,9 @@ def p_c_const(p):
     c : TRUE
        | FALSE
     '''
-    if p[1] == oomphlex.reserved_map['TRUE']:
+    if p[1] == 'true':
         p[0] = BTrue()
-    elif p[1] == oomphlex.reserved_map['FALSE']:
+    elif p[1] == 'false':
         p[0] = BFalse()
 
 
@@ -169,16 +171,16 @@ def p_c_seq(p):
 
 def p_c_if(p):
     '''
-    c : IF c THEN c ELSE c
+    c : IF LPAREN c RPAREN LCURL c RCURL ELSE LCURL c RCURL
     '''
-    p[0] = If(p[2], p[4], p[6])
+    p[0] = If(p[3], p[6], p[10])
 
 
 def p_c_while(p):
     '''
-    c : WHILE c DO c
+    c : WHILE LPAREN c RPAREN LCURL c RCURL
     '''
-    p[0] = While(p[2], p[4])
+    p[0] = While(p[3], p[6])
 
 
 def p_c_skip(p):
@@ -187,18 +189,18 @@ def p_c_skip(p):
     | BREAK
     | CONTINUE
     '''
-    pass
+    p[0] = Skip()
 
 
 def p_c_units(p):
     '''
-    c : PRINT c
-    | TEST c
+    c : PRINT LPAREN c RPAREN
+    | TEST LPAREN c RPAREN
     '''
     if p[1] == 'print':
-        p[0] = Print(p[2])
+        p[0] = Print(p[3])
     elif p[1] == 'test':
-        p[0] = Test(p[2])
+        p[0] = Test(p[3])
 
 
 def p_c_assign(p):

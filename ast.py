@@ -129,12 +129,12 @@ class Equals(BinExp):
 class NotEquals(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
-        return n1 != n2
+        return n1 != n2, env
 
 
 class Less(BinExp):
     def eval(self, env):
-        n1, n2 = self.left.eval(env[0]), self.right.eval(env)[0]
+        n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 < n2, env
 
 
@@ -199,7 +199,8 @@ class Assign(Expr):
 
 class Seq(Expr):
     def __init__(self, c1, c2):
-        assert isinstance(c1, Expr) and isinstance(c2, Expr)
+        assert isinstance(c1, Expr), f"First command {c1} of sequence is not a valid expression!"
+        assert isinstance(c2, Expr), f"Second command {c2} of sequence is not a valid expression!"
         self.left = c1
         self.right = c2
 
@@ -216,14 +217,15 @@ class If(Expr):
         self.bneq = c2
 
     def eval(self, env):
-        if self.beq.eval(env)[0]:
+        if self.guard.eval(env)[0]:
             return self.beq.eval(env)
         return self.bneq.eval(env)
 
 
 class While(Expr):
     def __init__(self, bexp, c):
-        assert isinstance(bexp, Expr) and isinstance(c, Expr)
+        assert isinstance(bexp, Expr), f'Loop guard {bexp} is not a valid expression!'
+        assert isinstance(c, Expr), f'Loop body {c} is not a valid expression!'
         self.guard = bexp
         self.loop = c
 
@@ -231,7 +233,7 @@ class While(Expr):
         if self.guard.eval(env)[0]:
             _, env = self.loop.eval(env)
             return self.eval(env)
-        return env
+        return (), env
 
 
 class Print(Expr):
@@ -252,7 +254,7 @@ class Test(Expr):
 
     def eval(self, env):
         b = self.exp.eval(env)
-        assert b[0]
+        assert b[0], f'Test expression {b} evaluated to false!'
         return b
 
 

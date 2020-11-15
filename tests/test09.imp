@@ -1,0 +1,10 @@
+if ((2 = 2) and (3 = 3)) {x := 0} else {x := 1};
+test(x = 0);
+if ((2 = 2) and (2 = 3)) {x := 1} else {x := 2};
+test(x = 2);
+if ((2 = 3) and (2 = 2)) {x := 0} else {x := 1};
+test(x = 1);
+if ((2 = 3) and (2 = 3)) {x := 2} else {x := 3};
+test(x = 3);
+if ((x < 4) and (x < 5)) {x := 7} else {skip};
+test(x = 7)

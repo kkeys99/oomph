@@ -2,8 +2,8 @@ from ply import lex
 
 # Reserved words
 reserved = (
-    'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'THEN', 'ELSE', 
-    'WHILE', 'DO', 'TEST', 'INPUT', 'PRINT', 'DEF'
+    'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'ELSE', 
+    'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF'
 )
 
 tokens = reserved + (
@@ -16,11 +16,8 @@ tokens = reserved + (
     # Assignment (:=)
     'ASSIGN', 
 
-    # Delimiters ( ) ; :
-    'SEMI', 'LPAREN', 'RPAREN', 'COLON', 'COMMA',
-
-    # End of file
-    'EOF',
+    # Delimiters ( ) ; : { }
+    'SEMI', 'LPAREN', 'RPAREN', 'COLON', 'COMMA', 'LCURL', 'RCURL',
 )
 
 # Completely ignored characters, space and tab
@@ -53,6 +50,8 @@ t_COLON            = r':'
 t_SEMI             = r';'
 t_LPAREN           = r'\('
 t_RPAREN           = r'\)'
+t_LCURL            = r'{'
+t_RCURL            = r'}'
 # t_LBRACE           = r'\['
 # t_RBRACE           = r'\]'
 
@@ -66,14 +65,6 @@ def t_ID(t):
     r'[A-Za-z_][\w_]*'
     t.type = reserved_map.get(t.value,'VAR')
     return t
-
-
-# End of file
-def t_eof(t):
-    if not t.lexer.end:
-        t.lexer.end = True
-        t.type = 'EOF'
-        return t
 
 
 # Integer literals

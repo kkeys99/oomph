@@ -1,0 +1,19 @@
+x := 0;
+y := 0;
+z := 0;
+acc := 0;
+while (x < 5) {
+    x := x + 1;
+    if (x = 4) {continue} else {acc := acc + x};
+    while (y < 5) {
+        y := y + 1;
+        if (y = 3) {continue} else {acc := acc + y};
+        while (z < 5) {
+            z := z + 1;
+            if (z = 2) {continue} else {acc := acc + z}
+        };
+        z := 0
+    };
+    y := 0
+};
+test (acc = 396)
