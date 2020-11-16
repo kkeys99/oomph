@@ -15,7 +15,6 @@ def main():
         if text == "env()":
             print(env)
             continue
-        lexer.end = False
         result = parser.parse(text)
         try:
             v, env = result.eval(env)

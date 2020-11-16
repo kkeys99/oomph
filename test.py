@@ -2,6 +2,12 @@ import os
 import oomphparse
 
 
+def red(skk): return "\033[91m {}\033[00m" .format(skk)
+
+
+def green(skk): return "\033[92m {}\033[00m" .format(skk)
+
+
 def test():
     testDir = os.path.join(os.getcwd(), 'tests')
     tests = []
@@ -18,9 +24,9 @@ def test():
         try:
             tree = oomphparse.parser.parse(prog)
             _ = tree.eval({})
-            print(f'{relative_file} OK')
+            print(f'{relative_file}: ' + green('OK'))
         except:
-            print(f'{relative_file} NOT OK')
+            print(f'{relative_file}:' + red('NOT OK'))
 
 
 if __name__ == "__main__":

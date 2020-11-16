@@ -7,6 +7,7 @@ tokens = oomphlex.tokens
 precedence = (
     ('left', 'SEMI'),
     ('right', 'COLON'),
+    ('nonassoc', 'LPAREN', 'RPAREN'),
     ('nonassoc', 'ASSIGN'),
     ('left', 'OR'),
     ('left', 'AND'),

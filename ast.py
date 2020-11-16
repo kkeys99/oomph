@@ -37,15 +37,24 @@ class Int(Expr):
     def eval(self, env):
         return self.value, env
 
+    def __str__(self):
+        return str(self.value)
+
 
 class BTrue(Expr):
     def eval(self, env):
         return True, env
 
+    def __str__(self):
+        return "true"
+
 
 class BFalse(Expr):
     def eval(self, env):
         return False, env
+
+    def __str__(self):
+        return "true"
 
 
 class Var(Expr):
@@ -59,6 +68,9 @@ class Var(Expr):
         except KeyError:
             raise UnboundVariable(self.name)
 
+    def __str__(self):
+        return str(self.name)
+
 
 class Function(Expr):
     def __init__(self, name, params, exp):
@@ -71,9 +83,14 @@ class Function(Expr):
         self.exp = exp
 
     def eval(self, env):
-        clos = Closure(self.exp, self.args, env)
+        clos = Closure(self.exp, self.args, env.copy())
         clos.env[self.name.name] = clos
+        env[self.name.name] = clos
         return clos, env
+
+    def __str__(self):
+        args = ",".join(map(str, self.args))
+        return f"def {self.name}({args}): {self.exp}"
 
 
 class App(Expr):
@@ -87,7 +104,11 @@ class App(Expr):
     def eval(self, env):
         clos, env1 = self.func.eval(env)
         env2 = {k.name: v.eval(env)[0] for (k, v) in zip(clos.args, self.args)}
-        return clos.expr.eval({**env2, **env1})[0], env
+        return clos.expr.eval({**env2, **clos.env})[0], env1
+
+    def __str__(self):
+        args = ",".join(map(str, self.args))
+        return f"app {self.func}({args})"
 
 
 class BinExp(Expr):
@@ -102,11 +123,17 @@ class Plus(BinExp):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 + n2, env
 
+    def __str__(self):
+        return f"{self.left} + {self.right}"
+
 
 class Minus(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 - n2, env
+
+    def __str__(self):
+        return f"{self.left} - {self.right}"
 
 
 class Times(BinExp):
@@ -114,10 +141,16 @@ class Times(BinExp):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 * n2, env
 
+    def __str__(self):
+        return f"{self.left} * {self.right}"
+
 
 class Input(Expr):
     def eval(self, env):
         return int(input(">")), env
+
+    def __str__(self):
+        return "input"
 
 
 class Equals(BinExp):
@@ -125,11 +158,17 @@ class Equals(BinExp):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 == n2, env
 
+    def __str__(self):
+        return f"{self.left} = {self.right}"
+
 
 class NotEquals(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 != n2, env
+
+    def __str__(self):
+        return f"{self.left} != {self.right}"
 
 
 class Less(BinExp):
@@ -137,11 +176,17 @@ class Less(BinExp):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 < n2, env
 
+    def __str__(self):
+        return f"{self.left} < {self.right}"
+
 
 class LessEq(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 <= n2, env
+
+    def __str__(self):
+        return f"{self.left} <= {self.right}"
 
 
 class Greater(BinExp):
@@ -149,11 +194,17 @@ class Greater(BinExp):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 > n2, env
 
+    def __str__(self):
+        return f"{self.left} > {self.right}"
+
 
 class GreaterEq(BinExp):
     def eval(self, env):
         n1, n2 = self.left.eval(env)[0], self.right.eval(env)[0]
         return n1 >= n2, env
+
+    def __str__(self):
+        return f"{self.left} >= {self.right}"
 
 
 class Not(Expr):
@@ -164,26 +215,41 @@ class Not(Expr):
     def eval(self, env):
         return not self.bexp.eval(env)[0], env
 
+    def __str__(self):
+        return f"not {self.bexp}"
+
 
 class And(BinExp):
     def eval(self, env):
         # Can't bind variables and still short circuit
         return self.left.eval(env)[0] and self.right.eval(env)[0], env
 
+    def __str__(self):
+        return f"{self.left} and {self.right}"
+
 
 class Or(BinExp):
     def eval(self, env):
         return self.left.eval(env)[0] or self.right.eval(env)[0], env
+
+    def __str__(self):
+        return f"{self.left} or {self.right}"
 
 
 class Unit(Expr):
     def eval(self, env):
         return (), env
 
+    def __str__(self):
+        return "unit"
+
 
 class Skip(Expr):
     def eval(self, env):
         return (), env
+
+    def __str__(self):
+        return "skip"
 
 
 class Assign(Expr):
@@ -196,6 +262,9 @@ class Assign(Expr):
         env[self.var.name] = self.exp.eval(env)[0]
         return (), env
 
+    def __str__(self):
+        return f"{self.var} := {self.exp}"
+
 
 class Seq(Expr):
     def __init__(self, c1, c2):
@@ -207,6 +276,9 @@ class Seq(Expr):
     def eval(self, env):
         _, env = self.left.eval(env)
         return self.right.eval(env)
+
+    def __str__(self):
+        return f"{self.left} ; {self.right}"
 
 
 class If(Expr):
