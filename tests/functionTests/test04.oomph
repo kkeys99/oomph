@@ -1,0 +1,6 @@
+x := 1;
+def f(y): {x + y};
+test(f(1) = 2);
+x := 2;
+test(f(1) = 2);
+test(f(x) = 3)

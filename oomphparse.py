@@ -157,9 +157,9 @@ def p_c_const(p):
 
 def p_c_app(p):
     '''
-    c : c LPAREN exps RPAREN
+    c : VAR LPAREN exps RPAREN
     '''
-    p[0] = App(p[1], p[3])
+    p[0] = App(Var(p[1]), p[3])
 
 
 # Commands
