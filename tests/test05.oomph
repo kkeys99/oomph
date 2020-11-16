@@ -4,13 +4,13 @@ z := 0;
 acc := 0;
 while (x < 5) {
     x := x + 1;
-    if (x = 4) {continue} else {acc := acc + x};
+    if (x = 4) {skip} else {acc := acc + x};
     while (y < 5) {
         y := y + 1;
-        if (y = 3) {continue} else {acc := acc + y};
+        if (y = 3) {skip} else {acc := acc + y};
         while (z < 5) {
             z := z + 1;
-            if (z = 2) {continue} else {acc := acc + z}
+            if (z = 2) {skip} else {acc := acc + z}
         };
         z := 0
     };

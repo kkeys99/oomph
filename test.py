@@ -1,15 +1,26 @@
 import os
 import oomphparse
 
+
 def test():
     testDir = os.path.join(os.getcwd(), 'tests')
-    tests = os.listdir(testDir)
+    tests = []
+    for r, d, f in os.walk(testDir):
+        for file in f:
+            if '.oomph' in file:
+                tests.append(os.path.join(r, file))
     tests.sort()
+
     for filename in tests:
         with open(os.path.join(testDir, filename)) as testFile:
             prog = testFile.read()
-        _ = oomphparse.parser.parse(prog)
-        print(f'{filename} OK')
+        relative_file = filename.replace(testDir + '/', '')
+        try:
+            tree = oomphparse.parser.parse(prog)
+            _ = tree.eval({})
+            print(f'{relative_file} OK')
+        except:
+            print(f'{relative_file} NOT OK')
 
 
 if __name__ == "__main__":
