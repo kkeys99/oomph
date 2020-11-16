@@ -14,6 +14,7 @@ def main():
     with open(in_file) as file:
         prog = file.read()
     result = oomphparse.parser.parse(prog)
+    print(result)
     print(result.eval({}))
 
 

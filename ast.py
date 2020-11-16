@@ -108,7 +108,7 @@ class App(Expr):
 
     def __str__(self):
         args = ",".join(map(str, self.args))
-        return f"app {self.func}({args})"
+        return f"app {self.func} to ({args})"
 
 
 class BinExp(Expr):
@@ -293,6 +293,9 @@ class If(Expr):
             return self.beq.eval(env)
         return self.bneq.eval(env)
 
+    def __str__(self):
+        return f"if {self.guard} then {self.beq} else {self.bneq}"
+
 
 class While(Expr):
     def __init__(self, bexp, c):
@@ -318,6 +321,9 @@ class Print(Expr):
         print(v)
         return v, env
 
+    def __str__(self):
+        return f"print({self.exp})"
+
 
 class Test(Expr):
     def __init__(self, exp):
@@ -328,6 +334,9 @@ class Test(Expr):
         b = self.exp.eval(env)
         assert b[0], f'Test expression {b} evaluated to false!'
         return (), env
+
+    def __str__(self):
+        return f"test({self.exp})"
 
 
 class Break(Expr):

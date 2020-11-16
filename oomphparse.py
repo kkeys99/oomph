@@ -7,7 +7,7 @@ tokens = oomphlex.tokens
 precedence = (
     ('left', 'SEMI'),
     ('right', 'COLON'),
-    ('nonassoc', 'LPAREN', 'RPAREN'),
+    # ('nonassoc', 'LPAREN', 'RPAREN'),
     ('nonassoc', 'ASSIGN'),
     ('left', 'OR'),
     ('left', 'AND'),
@@ -61,9 +61,9 @@ def p_vars_fun(p):
 
 def p_c_func(p):
     '''
-    c : DEF VAR LPAREN vars RPAREN COLON c
+    c : DEF VAR LPAREN vars RPAREN COLON LCURL c RCURL
     '''
-    p[0] = Function(Var(p[2]), p[4], p[7])
+    p[0] = Function(Var(p[2]), p[4], p[8])
 
 
 def p_exps_fun(p):
@@ -75,13 +75,6 @@ def p_exps_fun(p):
         p[0] = [p[1]]
     else:
         p[0] = [p[1]] + p[3]
-
-
-def p_c_app(p):
-    '''
-    c : c LPAREN exps RPAREN
-    '''
-    p[0] = App(p[1], p[3])
 
 
 def p_c_int(p):
@@ -160,6 +153,13 @@ def p_c_const(p):
         p[0] = BTrue()
     elif p[1] == 'false':
         p[0] = BFalse()
+
+
+def p_c_app(p):
+    '''
+    c : c LPAREN exps RPAREN
+    '''
+    p[0] = App(p[1], p[3])
 
 
 # Commands
