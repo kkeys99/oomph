@@ -1,7 +1,0 @@
-x := 0;
-acc := 0;
-while (x < 10) {
-    x := x + 1;
-    if (x > 5) {skip} else {acc := acc + x}
-};
-test(x = 10)
