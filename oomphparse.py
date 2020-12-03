@@ -8,7 +8,6 @@ precedence = (
     ('left', 'SEMI'),
     ('right', 'COLON'),
     ('nonassoc', 'ASSIGN'),
-    ('nonassoc', 'LPAREN', 'RPAREN'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQUALS', 'NOTEQUALS'),
@@ -17,7 +16,8 @@ precedence = (
     ('left', 'TIMES'),
     ('right', 'NOT'),
     ('right', 'PRINT', 'TEST'),
-    ('right', 'DOT')
+    ('nonassoc', 'LPAREN', 'RPAREN'),
+    ('right', 'DOT'),
  )
 
 
