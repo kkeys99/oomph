@@ -23,9 +23,37 @@ class Closure:
         self.args = args
         self.env = env
 
+class ClassInfo:
+    def __init__(self, classVars, methods):
+        """
+        Parameter classVars: a list of Var objects
+        Parameter methods: a list of Function objects
+        """
+        assert isinstance(classVars, dict), "Invalid class variable"
+        assert isinstance(methods, dict), "Invalid method declaration"
+        self.classVars = classVars
+        self.methods = methods
 
+    def __getitem__(self, key):
+        """
+        Note that methods will shadow class variables because of this
+        """
+        if key in self.methods:
+            return self.methods[key]
+        if key in self.classVars:
+            return self.classVars[key]
+        raise AttributeError(key)
+        
 class Expr:
     def eval(self, env):
+        """
+        The configuration returned by eval is a tuple with elements
+
+        (value, variableBindings)
+
+        Where value is the value computed by the function
+        and variableBindings is a dictionary mapping variable names to their values
+        """
         return None, None
 
 
@@ -59,7 +87,7 @@ class BFalse(Expr):
 
 class Var(Expr):
     def __init__(self, var):
-        assert type(var) == str
+        assert type(var) == str, f"{var} is not a variable"
         self.name = var
 
     def eval(self, env):
@@ -71,6 +99,62 @@ class Var(Expr):
     def __str__(self):
         return str(self.name)
 
+class Class(Expr):
+    def __init__(self, name, body):
+        assert isinstance(name, Var), "Class name is invalid"
+        assert self.bodyIsOk(body), "Class body can only contain method and variable declarations"
+        self.name = name
+        self.body = body
+
+    def bodyIsOk(self, body):
+        """
+        Returns whether body is a sequence of assignment statements and functions 
+        (or alternatively just a single statement of those types)
+        """
+        if isinstance(body, Assign) or isinstance(body, Function):
+            return True
+        if not isinstance(body, Seq):
+            return False
+        return self.bodyIsOk(body.left) and self.bodyIsOk(body.right)
+
+    def destructBody(self, body):
+        """
+        Returns a pair containing (classVars, methods)
+
+        Where classVars is a dictionary mapping variable names to values
+        and methods is a dictionary mapping method names to closures
+
+        Parameter body: the body of the class
+        """
+        if isinstance(body, Assign):
+            # Evaluate the assignment statement to get its environment
+            _, env = body.eval({})
+            return (env, {})
+        if isinstance(body, Function):
+            # Evaluate the function to get the environment mapping func name to closure
+            _, env = body.eval({})
+            return ({}, env)
+        leftClassVars, leftMethods = self.destructBody(body.left)
+        rightClassVars, rightMethods = self.destructBody(body.right)
+        return ({**leftClassVars, **rightClassVars}, {**leftMethods, **rightMethods})
+
+    def eval(self, env):
+        classInfo = ClassInfo(*self.destructBody(self.body))
+        env[self.name.name] = classInfo
+        return classInfo, env
+
+
+class Dot(Expr):
+    def __init__(self, obj, attr):
+        assert isinstance(obj, Expr), "Left side of a dot operator must be an expression"
+        assert isinstance(attr, Var), "Right side of a dot operator must be a variable"
+        self.obj = obj
+        self.attr = attr
+
+    def eval(self, env):
+        attr = self.attr.name
+        classInfo, newEnv = self.obj.eval(env)
+        return classInfo[attr], newEnv
 
 class Function(Expr):
     def __init__(self, name, params, exp):

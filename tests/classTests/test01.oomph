@@ -1,0 +1,10 @@
+class Dog: {
+    name := 5;
+    value := 10;
+    type := 3;
+    def woof(x): { x };
+    def wag(y): { y + 1 }
+};
+arg := Dog.wag(Dog.value - 1);
+result := Dog.woof(Dog.woof(arg) + 32);
+test(result = 42)

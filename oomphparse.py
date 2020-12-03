@@ -7,8 +7,8 @@ tokens = oomphlex.tokens
 precedence = (
     ('left', 'SEMI'),
     ('right', 'COLON'),
-    # ('nonassoc', 'LPAREN', 'RPAREN'),
     ('nonassoc', 'ASSIGN'),
+    ('nonassoc', 'LPAREN', 'RPAREN'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQUALS', 'NOTEQUALS'),
@@ -17,6 +17,7 @@ precedence = (
     ('left', 'TIMES'),
     ('right', 'NOT'),
     ('right', 'PRINT', 'TEST'),
+    ('right', 'DOT')
  )
 
 
@@ -65,6 +66,18 @@ def p_c_func(p):
     '''
     p[0] = Function(Var(p[2]), p[4], p[8])
 
+
+def p_c_class(p):
+    '''
+    c : CLASS VAR COLON LCURL c RCURL
+    '''
+    p[0] = Class(Var(p[2]), p[5])
+
+def p_c_dot(p):
+    '''
+    c : c DOT c
+    '''
+    p[0] = Dot(p[1], p[3])
 
 def p_exps_fun(p):
     '''
@@ -157,9 +170,9 @@ def p_c_const(p):
 
 def p_c_app(p):
     '''
-    c : VAR LPAREN exps RPAREN
+    c : c LPAREN exps RPAREN
     '''
-    p[0] = App(Var(p[1]), p[3])
+    p[0] = App(p[1], p[3])
 
 
 # Commands
