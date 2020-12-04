@@ -1,0 +1,11 @@
+class Basic: {
+    att := 5;
+    def plusAtt(this, x): {
+        this.att + x
+    }
+};
+b := Basic();
+test(b.att = 5);
+test(Basic.att = 5);
+test(b.plusAtt(42) = 52 - Basic.att);
+test(Basic.plusAtt(b, 3) = 8)
