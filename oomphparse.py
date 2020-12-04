@@ -60,6 +60,12 @@ def p_vars_fun(p):
         p[0] = [Var(p[1])] + p[3]
 
 
+def p_c_empty_func(p):
+    '''
+    c : DEF VAR LPAREN RPAREN COLON LCURL c RCURL
+    '''
+    p[0] = Function(Var(p[2]), [], p[7])
+
 def p_c_func(p):
     '''
     c : DEF VAR LPAREN vars RPAREN COLON LCURL c RCURL
@@ -67,17 +73,18 @@ def p_c_func(p):
     p[0] = Function(Var(p[2]), p[4], p[8])
 
 
-def p_c_class(p):
+def p_c_emptyApp(p):
     '''
-    c : CLASS VAR COLON LCURL c RCURL
+    c : c LPAREN RPAREN
     '''
-    p[0] = Class(Var(p[2]), p[5])
+    p[0] = App(p[1], [])
 
-def p_c_dot(p):
+def p_c_app(p):
     '''
-    c : c DOT c
+    c : c LPAREN exps RPAREN
     '''
-    p[0] = Dot(p[1], p[3])
+    p[0] = App(p[1], p[3])
+
 
 def p_exps_fun(p):
     '''
@@ -88,6 +95,18 @@ def p_exps_fun(p):
         p[0] = [p[1]]
     else:
         p[0] = [p[1]] + p[3]
+
+def p_c_class(p):
+    '''
+    c : CLASS VAR COLON LCURL c RCURL
+    '''
+    p[0] = Class(Var(p[2]), p[5])
+
+def p_c_dot(p):
+    '''
+    c : c DOT VAR
+    '''
+    p[0] = Dot(p[1], Var(p[3]))
 
 
 def p_c_int(p):
@@ -168,13 +187,6 @@ def p_c_const(p):
         p[0] = BFalse()
 
 
-def p_c_app(p):
-    '''
-    c : c LPAREN exps RPAREN
-    '''
-    p[0] = App(p[1], p[3])
-
-
 # Commands
 def p_c_seq(p):
     '''
@@ -219,9 +231,9 @@ def p_c_units(p):
 
 def p_c_assign(p):
     '''
-    c : VAR ASSIGN c
+    c : c ASSIGN c
     '''
-    p[0] = Assign(Var(p[1]), p[3])
+    p[0] = Assign(p[1], p[3])
 
 
 # Error rule for syntax errors

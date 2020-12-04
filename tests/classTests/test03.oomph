@@ -1,0 +1,24 @@
+class Student: {
+    universityId := 538;
+    def constructor(this, sid, gpa, smart): {
+        this.sid := sid + 1;
+        this.gpa := gpa;
+        this.smart := smart
+    }
+};
+goodStudent := Student(123, 4, true);
+test(goodStudent.sid = 124);
+test(goodStudent.gpa = 4);
+test(goodStudent.smart);
+
+goodStudent.newAttr := 42;
+test(goodStudent.newAttr = 42);
+test(goodStudent.universityId = 538);
+
+Student.universityId := 5;
+test(goodStudent.universityId = 5);
+test(Student.universityId = 5);
+
+goodStudent.universityId := 4;
+test(goodStudent.universityId = 4);
+test(Student.universityId = 5)
