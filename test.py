@@ -25,8 +25,8 @@ def test():
             tree = oomphparse.parser.parse(prog)
             _ = tree.eval({})
             print(f'{relative_file}: ' + green('OK'))
-        except:
-            print(f'{relative_file}:' + red('NOT OK'))
+        except Exception as e:
+            print(f'{relative_file}:' + red(f'NOT OK: {repr(e)}'))
 
 
 if __name__ == "__main__":

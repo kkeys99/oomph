@@ -6,7 +6,7 @@ tokens = oomphlex.tokens
 
 precedence = (
     ('left', 'SEMI'),
-    ('right', 'COLON'),
+    ('right', 'COLON', 'ARROW'),
     ('nonassoc', 'ASSIGN'),
     ('left', 'OR'),
     ('left', 'AND'),
@@ -60,11 +60,37 @@ def p_vars_fun(p):
         p[0] = [Var(p[1])] + p[3]
 
 
+def p_var_no_comma(p):
+    '''
+    var_c : VAR
+          | VAR vars
+    '''
+    if len(p) == 2:
+        p[0] = [Var(p[1])]
+    else:
+        p[0] = [Var(p[1])] + p[2]
+
+
+def p_c_anon(p):
+    '''
+    c : FUN var_c ARROW c
+    '''
+    p[0] = AnonFunction(p[2], p[4])
+
+
+def p_c_empty_anon(p):
+    '''
+    c : FUN LPAREN RPAREN ARROW c
+    '''
+    p[0] = AnonFunction([], p[5])
+
+
 def p_c_empty_func(p):
     '''
     c : DEF VAR LPAREN RPAREN COLON LCURL c RCURL
     '''
     p[0] = Function(Var(p[2]), [], p[7])
+
 
 def p_c_func(p):
     '''
@@ -78,6 +104,7 @@ def p_c_emptyApp(p):
     c : c LPAREN RPAREN
     '''
     p[0] = App(p[1], [])
+
 
 def p_c_app(p):
     '''

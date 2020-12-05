@@ -3,7 +3,7 @@ from ply import lex
 # Reserved words
 reserved = (
     'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'ELSE', 
-    'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS'
+    'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS', 'FUN'
 )
 
 tokens = reserved + (
@@ -14,7 +14,10 @@ tokens = reserved + (
     'PLUS', 'MINUS', 'TIMES', 'EQUALS', 'NOTEQUALS', 'LESS', 'LESSEQ', 'GREATER', 'GREATEREQ', 
 
     # Assignment (:=)
-    'ASSIGN', 
+    'ASSIGN',
+
+    # Anonymous function arrow (->)
+    'ARROW',
 
     # Object Accessor (.)
     'DOT',
@@ -46,6 +49,9 @@ t_GREATEREQ        = r'>='
 
 # Assignment
 t_ASSIGN           = r':='
+
+# Anonymous function arrow
+t_ARROW            = r'->'
 
 # Object Accessor
 t_DOT              = r'\.'

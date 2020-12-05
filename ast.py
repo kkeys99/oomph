@@ -11,7 +11,8 @@ class NotAFunction(Exception):
     """
     Exception raised when a non function value is applied as a function
     """
-    pass
+    def __init__(self, exp):
+        self.message = f"Application of a non function: {exp}"
 
 
 class Closure:
@@ -31,10 +32,12 @@ class Closure:
         '''
         return MethodClosure(self.expr, self.args, self.env, obj)
 
+
 class MethodClosure(Closure):
     def __init__(self, expr, args, env, obj):
         super().__init__(expr, args, env)
         self.obj = obj
+
 
 class ClassInfo:
     def __init__(self, classVars, methods):
@@ -64,6 +67,7 @@ class ClassInfo:
     def __call__(self, args):
         return Object(self.classVars, self.methods, args)
 
+
 class Object(ClassInfo):
     def __init__(self, classVars, methods, args):
         super().__init__(classVars, methods)
@@ -90,7 +94,8 @@ class Object(ClassInfo):
 
     def eval(self, env):
         return self, env
-        
+
+
 class Expr:
     def eval(self, env):
         """
@@ -129,7 +134,7 @@ class BFalse(Expr):
         return False, env
 
     def __str__(self):
-        return "true"
+        return "false"
 
 
 class Var(Expr):
@@ -145,6 +150,7 @@ class Var(Expr):
 
     def __str__(self):
         return str(self.name)
+
 
 class Class(Expr):
     def __init__(self, name, body):
@@ -176,14 +182,14 @@ class Class(Expr):
         if isinstance(body, Assign):
             # Evaluate the assignment statement to get its environment
             _, env = body.eval({})
-            return (env, {})
+            return env, {}
         if isinstance(body, Function):
             # Evaluate the function to get the environment mapping func name to closure
             _, env = body.eval({})
-            return ({}, env)
+            return {}, env
         leftClassVars, leftMethods = self.destructBody(body.left)
         rightClassVars, rightMethods = self.destructBody(body.right)
-        return ({**leftClassVars, **rightClassVars}, {**leftMethods, **rightMethods})
+        return {**leftClassVars, **rightClassVars}, {**leftMethods, **rightMethods}
 
     def eval(self, env):
         classInfo = ClassInfo(*self.destructBody(self.body))
@@ -204,6 +210,7 @@ class Dot(Expr):
         if isinstance(classInfo[attr], Closure) and isinstance(classInfo, Object):
             return classInfo[attr].methodify(classInfo), newEnv
         return classInfo[attr], newEnv
+
 
 class Function(Expr):
     def __init__(self, name, params, exp):
@@ -226,9 +233,26 @@ class Function(Expr):
         return f"def {self.name}({args}): {self.exp}"
 
 
+class AnonFunction(Expr):
+    def __init__(self, params, exp):
+        for p in params:
+            assert isinstance(p, Var)
+        assert isinstance(exp, Expr)
+        self.args = params
+        self. exp = exp
+
+    def eval(self, env):
+        clos = Closure(self.exp, self.args, env.copy())
+        return clos, env
+
+    def __str__(self):
+        args = ' '.join(map(str, self.args))
+        return f"fun {args} -> {self.exp}"
+
+
 class App(Expr):
     def __init__(self, func, args):
-        assert isinstance(func, Expr)
+        assert isinstance(func, Expr) or isinstance(func, AnonFunction)
         for a in args:
             assert isinstance(a, Expr)
         self.func = func
@@ -249,6 +273,8 @@ class App(Expr):
             # Create a new object
             obj = clos(self.args)
             return obj, env1
+
+        raise NotAFunction(self.func)
 
     def __str__(self):
         args = ",".join(map(str, self.args))
