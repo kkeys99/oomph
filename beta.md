@@ -60,6 +60,5 @@ You can also run the interpreter interactively by executing `repl.py`. Files in
 
 For the final phase of the project, we plan on extending the class semantics with 
 access modifiers (private, public, and static) and to implement a Java-esque class
-hierarchy with subclassing and interfaces. We also hope to provide a full user 
-manual, as well as an implementation of basic data structures to create a more 
-complete language. 
+hierarchy with subclassing and interfaces. We also hope to add more built in 
+data types: strings, tuples, lists, and dictionaries. 
