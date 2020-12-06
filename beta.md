@@ -28,7 +28,7 @@ class Dog: {
 
 Class Dog essentially serves as a struct - variables and functions can be
 accessed as `Dog.woof(Dog.name)` (=5). No explicit constructor is provided, but
-Dog elements can still be made as follows: `d := Dog(); d.name = 6`. 
+Dog objects can still be made as follows: `d := Dog(); d.name = 6`. 
 Classes can also have custom constructors as follows:  
 
 ```
