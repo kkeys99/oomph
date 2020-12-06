@@ -25,11 +25,11 @@ class Closure:
         self.env = env
 
     def methodify(self, obj):
-        '''
+        """
         Creates a method version of this closure
 
         Parameter obj: the object that the method is being called on
-        '''
+        """
         return MethodClosure(self.expr, self.args, self.env, obj)
 
 

@@ -123,11 +123,13 @@ def p_exps_fun(p):
     else:
         p[0] = [p[1]] + p[3]
 
+
 def p_c_class(p):
     '''
     c : CLASS VAR COLON LCURL c RCURL
     '''
     p[0] = Class(Var(p[2]), p[5])
+
 
 def p_c_dot(p):
     '''
