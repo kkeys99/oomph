@@ -138,7 +138,6 @@ class PrivateObject:
         return self.obj.__call__(args)
 
 
-
 class PrivacyMod(Enum):
     PRIVATE = 1
     PUBLIC = 2
@@ -194,6 +193,7 @@ class List(Expr):
         if not isinstance(other, List):
             return False
         return all([a == b for a, b in zip(self.value, other.value)])
+
 
 class Tuple(Expr):
     def __init__(self, val):
@@ -348,6 +348,10 @@ class Class(Expr):
             body.left = AccessFunction.fromFunc(body.left, PrivacyMod.PUBLIC)
         if isinstance(body.right, Function) and not isinstance(body.right, AccessFunction):
             body.right = AccessFunction.fromFunc(body.right, PrivacyMod.PUBLIC)
+        if isinstance(body.left, Assign) and not isinstance(body.left, AccessAssign):
+            body.left = AccessAssign.fromAssign(body.left, PrivacyMod.PUBLIC)
+        if isinstance(body.right, Assign) and not isinstance(body.right, AccessAssign):
+            body.right = AccessAssign.fromAssign(body.right, PrivacyMod.PUBLIC)
         return self.bodyIsOk(body.left) and self.bodyIsOk(body.right)
 
     def destructBody(self, body):
@@ -401,7 +405,12 @@ class Dot(Expr):
             if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
                 raise TypeError("Attempted to access private method in public context!")
             return clos.methodify(classInfo), newEnv
-        return classInfo[attr], newEnv
+        if isinstance(val, tuple):
+            v, access = val
+            if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
+                raise TypeError("Attempted to access private variable in public context!")
+            return v, newEnv
+        return val, newEnv
 
     def __str__(self):
         return f"{self.obj}.{self.attr}"
@@ -474,9 +483,8 @@ class App(Expr):
     def eval(self, env):
         clos, env1 = self.func.eval(env)
         # Handle class methods
-        access = PrivacyMod.PUBLIC
         if isinstance(clos, tuple):
-            clos, access = clos
+            clos, _ = clos
         if isinstance(clos, Closure):
             # Copy the args, and if we have a method call, insert the object for "this"
             newArgs = self.args.copy()
@@ -685,6 +693,47 @@ class Assign(Expr):
 
     def __str__(self):
         return f"{self.var} := {self.exp}"
+
+
+class AccessAssign(Assign):
+    def __init__(self, var, exp, access):
+        super().__init__(var, exp)
+        assert isinstance(access, PrivacyMod)
+        self.access = access
+
+    @classmethod
+    def fromAssign(cls, assign, access):
+        assert isinstance(assign, Assign)
+        return AccessAssign(assign.var, assign.exp, access)
+
+    def eval(self, env):
+        if isinstance(self.var, Var):
+            env[self.var.name] = self.exp.eval(env)[0], self.access
+        elif isinstance(self.var, Dot):
+            (obj, _), attr, (newval, _) = self.var.obj.eval(env), self.var.attr.name, self.exp.eval(env)
+            obj[attr] = newval, self.access
+        elif isinstance(self.var, Index):
+            (obj, _), (ind, _), (newval, _) = self.var.obj.eval(env), self.var.ind.eval(env), self.exp.eval(env)
+            obj[ind] = newval
+        elif isinstance(self.var, Slice):
+            if self.var.start is not None:
+                start, _ = self.var.start.eval(env)
+            else:
+                start = None
+            if self.var.end is not None:
+                end, _ = self.var.end.eval(env)
+            else:
+                end = None
+            (obj, _), (newval, _) = self.var.obj.eval(env), self.exp.eval(env)
+            if start is not None and end is not None:
+                obj[start:end] = newval
+            elif start is not None:
+                obj[start:] = newval
+            elif end is not None:
+                obj[:end] = newval
+            else:
+                obj[:] = newval
+        return (), env
 
 
 class Seq(Expr):

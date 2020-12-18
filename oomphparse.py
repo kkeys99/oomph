@@ -245,11 +245,13 @@ def p_c_str(p):
     '''
     p[0] = String(p[1][1:-1])
 
+
 def p_c_index(p):
     '''
     c : c LBRACE c RBRACE
     '''
     p[0] = Index(p[1], p[3])
+
 
 def p_c_slice(p):
     '''
@@ -257,11 +259,13 @@ def p_c_slice(p):
     '''
     p[0] = Slice(p[1], p[3], p[5])
 
+
 def p_c_sliceEmpty(p):
     '''
     c : c LBRACE COLON RBRACE
     '''
     p[0] = Slice(p[1], None, None)
+
 
 def p_c_sliceStart(p):
     '''
@@ -269,11 +273,13 @@ def p_c_sliceStart(p):
     '''
     p[0] = Slice(p[1], p[3], None)
 
+
 def p_c_sliceEnd(p):
     '''
     c : c LBRACE COLON c RBRACE
     '''
     p[0] = Slice(p[1], None, p[4])
+
 
 def p_c_int(p):
     '''
@@ -406,20 +412,21 @@ def p_c_public_assign(p):
     '''
     c : c PUBLIC ASSIGN c
     '''
-    pass
+    p[0] = AccessAssign(p[1], p[4], PrivacyMod.PUBLIC)
 
 
 def p_c_private_assign(p):
     '''
     c : c PRIVATE ASSIGN c
     '''
-    pass
+    p[0] = AccessAssign(p[1], p[4], PrivacyMod.PRIVATE)
 
 
 def p_c_protected_assign(p):
     '''
     c : c PROTECTED ASSIGN c
     '''
+    # p[0] = AccessAssign(p[1], p[4], PrivacyMod.PROTECTED)
     pass
 
 
