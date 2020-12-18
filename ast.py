@@ -186,6 +186,7 @@ class Class(Expr):
             return True
         if not isinstance(body, Seq):
             return False
+        # Make sure everything has an access
         if isinstance(body.left, Function) and not isinstance(body.left, AccessFunction):
             body.left = AccessFunction.fromFunc(body.left, PrivacyMod.PUBLIC)
         if isinstance(body.right, Function) and not isinstance(body.right, AccessFunction):

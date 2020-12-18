@@ -103,20 +103,21 @@ def p_c_empty_public_fun(p):
     '''
     c : DEF PUBLIC VAR LPAREN RPAREN COLON LCURL c RCURL
     '''
-    pass
+    p[0] = AccessFunction(Var(p[3]), [], p[8], PrivacyMod.PUBLIC)
 
 
 def p_c_empty_private_fun(p):
     '''
     c : DEF PRIVATE VAR LPAREN RPAREN COLON LCURL c RCURL
     '''
-    pass
+    p[0] = AccessFunction(Var(p[3]), [], p[8], PrivacyMod.PRIVATE)
 
 
 def p_c_empty_protected_fun(p):
     '''
     c : DEF PROTECTED VAR LPAREN RPAREN COLON LCURL c RCURL
     '''
+    # p[0] = AccessFunction(Var(p[3]), [], p[8], PrivacyMod.PROTECTED)
     pass
 
 
@@ -124,20 +125,21 @@ def p_c_public_fun(p):
     '''
     c : DEF PUBLIC VAR LPAREN vars RPAREN COLON LCURL c RCURL
     '''
-    pass
+    p[0] = AccessFunction(Var(p[3]), p[5], p[9], PrivacyMod.PUBLIC)
 
 
 def p_c_private_fun(p):
     '''
     c : DEF PRIVATE VAR LPAREN vars RPAREN COLON LCURL c RCURL
     '''
-    pass
+    p[0] = AccessFunction(Var(p[3]), p[5], p[9], PrivacyMod.PRIVATE)
 
 
 def p_c_protected_fun(p):
     '''
     c : DEF PROTECTED VAR LPAREN vars RPAREN COLON LCURL c RCURL
     '''
+    # p[0] = AccessFunction(Var(p[3]), p[5], p[9], PrivacyMod.PROTECTED)
     pass
 
 
