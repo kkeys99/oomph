@@ -33,29 +33,36 @@ class Closure:
 
         Parameter obj: the object that the method is being called on
         """
-        return MethodClosure(self.expr, self.args, self.env, obj)
+        return MethodClosure(self.expr, self.args, self.env, obj, obj.superClass)
 
     def __str__(self):
         return f"[| {list(map(str, self.args))}, {self.expr}, {self.env}|]"
 
 
 class MethodClosure(Closure):
-    def __init__(self, expr, args, env, obj):
+    def __init__(self, expr, args, env, obj, superClass):
         super().__init__(expr, args, env)
         self.obj = obj
+        self.superClass = superClass
 
 
 class ClassInfo:
-    def __init__(self, classVars, methods):
+    def __init__(self, name, classVars, methods, superClass):
         """
+        Parameter name: the name of this class (a string)
         Parameter classVars: a dictionary mapping variable names to values
         Parameter methods: a dictionary mapping method names to their closures
+        Parameter superClass: a string, the name of the superclass of this class, None if there is no superclass
         """
+        assert type(name) == str, "Class name must be a string"
         assert isinstance(classVars, dict), "Invalid class variable"
         assert isinstance(methods, dict), "Invalid method declaration"
+        assert superClass is None or isinstance(superClass, ClassInfo), "Invalid superclass name"
+        self.name = name
         self.classVars = classVars
         self.methods = methods
         self.constructor = methods.get("constructor", None)
+        self.superClass = superClass
 
     def __getitem__(self, key):
         """
@@ -65,18 +72,20 @@ class ClassInfo:
             return self.methods[key]
         if key in self.classVars:
             return self.classVars[key]
+        if self.superClass is not None:
+            return self.superClass[key]
         raise AttributeError(key)
 
     def __setitem__(self, key, value):
         self.classVars[key] = value
 
     def __call__(self, args):
-        return Object(self.classVars, self.methods, args)
+        return Object(self.name, self.classVars, self.methods, args, self.superClass)
 
 
 class Object(ClassInfo):
-    def __init__(self, classVars, methods, args):
-        super().__init__(classVars, methods)
+    def __init__(self, name, classVars, methods, args, superClass):
+        super().__init__(name, classVars, methods, superClass)
         self.attributes = {}
         if self.constructor:
             # Insert self for "this" in constructor call
@@ -86,7 +95,8 @@ class Object(ClassInfo):
                 raise TypeError("Invalid number of arguments for constructor call")
             env = constructor.env
             env2 = {k.name: v.eval(env)[0] for (k, v) in zip(constructor.args, args)}
-            _, newEnv = constructor.expr.eval({**env2, **env})
+            # Bind super to a pair, this and the superclass
+            _, newEnv = constructor.expr.eval({**env2, **env, 'super': (self, superClass)})
             self.attributes = newEnv['this'].attributes
         elif len(args) > 0:
             raise TypeError("Constructor takes no arguments")
@@ -138,6 +148,60 @@ class Int(Expr):
     def __str__(self):
         return str(self.value)
 
+class String(Expr):
+    def __init__(self, val):
+        assert type(val) == str
+        self.value = val
+
+    def eval(self, env):
+        return self.value, env
+    
+    def __str__(self):
+        return self.value
+
+
+class Index(Expr):
+    def __init__(self, obj, ind):
+        assert isinstance(obj, Expr)
+        assert isinstance(ind, Expr)
+        self.obj = obj
+        self.ind = ind
+
+    def eval(self, env):
+        obj, _ = self.obj.eval(env)
+        ind, _ = self.ind.eval(env)
+        assert type(obj) == str, 'Can only index a string'
+        return obj[ind], env
+
+class Slice(Expr):
+    def __init__(self, obj, start, end):
+        assert isinstance(obj, Expr)
+        assert isinstance(start, Expr) or start is None
+        assert isinstance(end, Expr) or end is None
+        self.obj = obj
+        self.start = start
+        self.end = end
+
+    def eval(self, env):
+        obj, _ = self.obj.eval(env)
+        if self.start is not None:
+            start, _ = self.start.eval(env)
+        else:
+            start = None
+        if self.end is not None:
+            end, _ = self.end.eval(env)
+        else:
+            end = None
+        assert type(obj) == str, 'Can only slice a string'
+        assert (type(start) == int or start is None) and (type(end) == int or end is None), "Slice indices must be integers"
+        if start is not None and end is not None:
+            return obj[start:end], env
+        if start is not None:
+            return obj[start:], env
+        if end is not None:
+            return obj[:end], env
+        return obj[:], env
+
 
 class BTrue(Expr):
     def eval(self, env):
@@ -171,11 +235,13 @@ class Var(Expr):
 
 
 class Class(Expr):
-    def __init__(self, name, body):
+    def __init__(self, name, body, superClass):
         assert isinstance(name, Var), "Class name is invalid"
         assert self.bodyIsOk(body), "Class body can only contain method and variable declarations"
+        assert superClass is None or isinstance(superClass, Var), "Invalid syntax when declaring superclass"
         self.name = name
         self.body = body
+        self.superClass = superClass
 
     def bodyIsOk(self, body):
         """
@@ -215,7 +281,11 @@ class Class(Expr):
         return {**leftClassVars, **rightClassVars}, {**leftMethods, **rightMethods}
 
     def eval(self, env):
-        classInfo = ClassInfo(*self.destructBody(self.body))
+        if self.superClass is not None:
+            superClass = env[self.superClass.name]
+        else:
+            superClass = None
+        classInfo = ClassInfo(self.name.name, *self.destructBody(self.body), superClass)
         env[self.name.name] = classInfo
         return classInfo, env
 
@@ -230,6 +300,9 @@ class Dot(Expr):
     def eval(self, env):
         attr = self.attr.name
         classInfo, newEnv = self.obj.eval(env)
+        if self.obj.name == 'super':
+            (obj, cls) = classInfo
+            return cls[attr][0].methodify(obj), newEnv
         if isinstance(classInfo[attr], tuple) \
                 and isinstance(classInfo[attr][0], Closure) \
                 and isinstance(classInfo, Object):
@@ -311,12 +384,19 @@ class App(Expr):
         if isinstance(clos, tuple):
             clos, access = clos
         if isinstance(clos, Closure):
-            # If we have a method call, insert the object for "this"
+            # Copy the args, and if we have a method call, insert the object for "this"
+            newArgs = self.args.copy()
             if isinstance(clos, MethodClosure):
-                self.args.insert(0, clos.obj)
-            if len(clos.args) != len(self.args):
+                newArgs.insert(0, clos.obj)
+            if len(clos.args) != len(newArgs):
                 raise TypeError("Number of arguments does not match number of parameters")
-            env2 = {k.name: v.eval(env)[0] for (k, v) in zip(clos.args, self.args)}
+            env2 = {k.name: v.eval(env)[0] for (k, v) in zip(clos.args, newArgs)}
+            if isinstance(clos, MethodClosure):
+                if 'super' in env:
+                    superClass = env['super'][1].superClass if env['super'][1] else None
+                else:
+                    superClass = clos.obj.superClass
+                env2['super'] = (clos.obj, superClass)
             return clos.expr.eval({**env2, **clos.env})[0], env1
         # Handle constructor calls
         if isinstance(clos, ClassInfo):
