@@ -1,0 +1,16 @@
+dict := {1 : 'a', 2 : 'b', 3 : 'c'};
+test(dict = {1 : 'a', 2 : 'b', 3 : 'c'});
+
+lst := [{1:'a'}, {2:'b'}];
+test(lst = [{1:'a'}, {2:'b'}]);
+
+dict[4] := 'd';
+test(dict[4] = 'd');
+test(dict = {1 : 'a', 2 : 'b', 4 : 'd', 3 : 'c'});
+
+dict[4] := 'e';
+test(dict[4] = 'e');
+test(dict = {1 : 'a', 2 : 'b', 4 : 'e', 3 : 'c'});
+
+empty := {};
+test(empty = {})

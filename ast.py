@@ -179,6 +179,9 @@ class Int(Expr):
             return False
         return self.value == other.value
 
+    def __hash__(self):
+        return hash(self.value)
+
 class List(Expr):
     def __init__(self, val):
         assert type(val) == list
@@ -205,6 +208,16 @@ class Tuple(Expr):
             return False
         return all([a == b for a, b in zip(self.value, other.value)])
 
+    def __hash__(self):
+        return hash(self.value)
+
+class Dict(Expr):
+    def __init__(self, keyvals):
+        self.keyvals = keyvals
+
+    def eval(self, env):
+        return {k.eval(env)[0] : v.eval(env)[0] for k, v in self.keyvals}, env
+
 class String(Expr):
     def __init__(self, val):
         assert type(val) == str
@@ -221,6 +234,9 @@ class String(Expr):
             return False
         return self.value == other.value
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 class Index(Expr):
     def __init__(self, obj, ind):
@@ -232,7 +248,7 @@ class Index(Expr):
     def eval(self, env):
         obj, _ = self.obj.eval(env)
         ind, _ = self.ind.eval(env)
-        assert type(obj) in [str, list, tuple], 'Can only index a string or list'
+        assert type(obj) in [str, list, tuple, dict], 'Can only index a string or list'
         return obj[ind], env
 
 
@@ -276,6 +292,9 @@ class BTrue(Expr):
     def __eq__(self, other):
         return isinstance(other, BTrue)
 
+    def __hash__(self):
+        return hash(True)
+
 
 class BFalse(Expr):
     def eval(self, env):
@@ -286,6 +305,9 @@ class BFalse(Expr):
 
     def __eq__(self, other):
         return isinstance(other, BFalse)
+
+    def __hash__(self):
+        return hash(False)
 
 
 class Var(Expr):
