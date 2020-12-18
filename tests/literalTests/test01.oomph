@@ -16,4 +16,7 @@ test(helloKenobi[0:5] = 'Hello');
 test(helloKenobi[-7:-1] = "Kenobi");
 test(helloKenobi[:5] = 'Hello');
 test(helloKenobi[-7:] = "Kenobi!");
-test(helloKenobi[:] = helloKenobi)
+test(helloKenobi[:] = helloKenobi);
+
+empty := '';
+test(empty = "")

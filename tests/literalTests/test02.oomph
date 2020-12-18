@@ -1,0 +1,45 @@
+empty := [];
+test(empty = []);
+
+one := [1];
+test(one = [1]);
+
+multi := [1,2,3];
+test(multi = [1,2,3]);
+
+nested := [multi,[true, false], [], 4, 5, 6];
+test(nested = [[1,2,3],[true, false], [], 4, 5, 6]);
+
+test(nested[0] = [1,2,3]);
+test(nested[1] = [true, false]);
+test(nested[-1] = 6);
+test(nested[0][0] = 1);
+
+test(nested[-3:] = [4,5,6]);
+test(nested[:1] = [[1,2,3]]);
+test(nested[3:7] = [4,5,6]);
+test(nested[:] = nested);
+
+lst := [1,2,3,4,5,6];
+lst[0] := 0;
+lst[0 + 1] := 1;
+lst[2:] := [2,3,4,5,6];
+
+test(lst[0] = 0);
+test(lst[1] = 1);
+test(lst = [0, 1, 2, 3, 4, 5, 6]);
+
+lst[:2] := [-1, 0];
+test(lst = [-1, 0, 2, 3, 4, 5, 6]);
+
+lst[1:3] := [1];
+test(lst = [-1, 1, 3, 4, 5, 6]);
+
+lst[:] := [42];
+test(lst = [42]);
+
+empty[:] := [1,2,3];
+test(empty = multi);
+
+empty := empty + [4,5,6];
+test(empty = [1,2,3,4,5,6])
