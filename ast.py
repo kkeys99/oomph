@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class UnboundVariable(Exception):
     """
     Exception raised when variable is not found
@@ -31,6 +34,9 @@ class Closure:
         Parameter obj: the object that the method is being called on
         """
         return MethodClosure(self.expr, self.args, self.env, obj)
+
+    def __str__(self):
+        return f"[| {list(map(str, self.args))}, {self.expr}, {self.env}|]"
 
 
 class MethodClosure(Closure):
@@ -75,11 +81,12 @@ class Object(ClassInfo):
         if self.constructor:
             # Insert self for "this" in constructor call
             args.insert(0, self)
-            if len(self.constructor.args) != len(args):
+            constructor = self.constructor[0]
+            if len(constructor.args) != len(args):
                 raise TypeError("Invalid number of arguments for constructor call")
-            env = self.constructor.env
-            env2 = {k.name: v.eval(env)[0] for (k, v) in zip(self.constructor.args, args)}
-            _, newEnv = self.constructor.expr.eval({**env2, **env})
+            env = constructor.env
+            env2 = {k.name: v.eval(env)[0] for (k, v) in zip(constructor.args, args)}
+            _, newEnv = constructor.expr.eval({**env2, **env})
             self.attributes = newEnv['this'].attributes
         elif len(args) > 0:
             raise TypeError("Constructor takes no arguments")
@@ -94,6 +101,17 @@ class Object(ClassInfo):
 
     def eval(self, env):
         return self, env
+
+
+class PrivacyMod(Enum):
+    PRIVATE = 1
+    PUBLIC = 2
+    PROTECTED = 3  # Might not need
+
+
+class AccessMod(Enum):
+    STATIC = 1
+    NONSTATIC = 2
 
 
 class Expr:
@@ -168,6 +186,10 @@ class Class(Expr):
             return True
         if not isinstance(body, Seq):
             return False
+        if isinstance(body.left, Function) and not isinstance(body.left, AccessFunction):
+            body.left = AccessFunction.fromFunc(body.left, PrivacyMod.PUBLIC)
+        if isinstance(body.right, Function) and not isinstance(body.right, AccessFunction):
+            body.right = AccessFunction.fromFunc(body.right, PrivacyMod.PUBLIC)
         return self.bodyIsOk(body.left) and self.bodyIsOk(body.right)
 
     def destructBody(self, body):
@@ -207,9 +229,14 @@ class Dot(Expr):
     def eval(self, env):
         attr = self.attr.name
         classInfo, newEnv = self.obj.eval(env)
-        if isinstance(classInfo[attr], Closure) and isinstance(classInfo, Object):
-            return classInfo[attr].methodify(classInfo), newEnv
+        if isinstance(classInfo[attr], tuple) \
+                and isinstance(classInfo[attr][0], Closure) \
+                and isinstance(classInfo, Object):
+            return classInfo[attr][0].methodify(classInfo), newEnv
         return classInfo[attr], newEnv
+
+    def __str__(self):
+        return f"{self.obj}.{self.attr}"
 
 
 class Function(Expr):
@@ -231,6 +258,24 @@ class Function(Expr):
     def __str__(self):
         args = ",".join(map(str, self.args))
         return f"def {self.name}({args}): {self.exp}"
+
+
+class AccessFunction(Function):
+    def __init__(self, name, params, exp, access):
+        super().__init__(name, params, exp)
+        assert isinstance(access, PrivacyMod)
+        self.access = access
+
+    @classmethod
+    def fromFunc(cls, function, access):
+        assert isinstance(function, Function)
+        return AccessFunction(function.name, function.args, function.exp, access)
+
+    def eval(self, env):
+        clos = Closure(self.exp, self.args, env.copy())
+        clos.env[self.name.name] = clos, self.access
+        env[self.name.name] = clos, self.access
+        return clos, env
 
 
 class AnonFunction(Expr):
@@ -260,6 +305,10 @@ class App(Expr):
 
     def eval(self, env):
         clos, env1 = self.func.eval(env)
+        # Handle class methods
+        access = PrivacyMod.PUBLIC
+        if isinstance(clos, tuple):
+            clos, access = clos
         if isinstance(clos, Closure):
             # If we have a method call, insert the object for "this"
             if isinstance(clos, MethodClosure):

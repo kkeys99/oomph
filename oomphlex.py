@@ -3,7 +3,8 @@ from ply import lex
 # Reserved words
 reserved = (
     'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'ELSE', 
-    'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS', 'FUN'
+    'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS', 'FUN', 'STATIC', 'PRIVATE',
+    'PUBLIC', 'PROTECTED'
 )
 
 tokens = reserved + (

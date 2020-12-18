@@ -99,6 +99,48 @@ def p_c_func(p):
     p[0] = Function(Var(p[2]), p[4], p[8])
 
 
+def p_c_empty_public_fun(p):
+    '''
+    c : DEF PUBLIC VAR LPAREN RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
+def p_c_empty_private_fun(p):
+    '''
+    c : DEF PRIVATE VAR LPAREN RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
+def p_c_empty_protected_fun(p):
+    '''
+    c : DEF PROTECTED VAR LPAREN RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
+def p_c_public_fun(p):
+    '''
+    c : DEF PUBLIC VAR LPAREN vars RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
+def p_c_private_fun(p):
+    '''
+    c : DEF PRIVATE VAR LPAREN vars RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
+def p_c_protected_fun(p):
+    '''
+    c : DEF PROTECTED VAR LPAREN vars RPAREN COLON LCURL c RCURL
+    '''
+    pass
+
+
 def p_c_emptyApp(p):
     '''
     c : c LPAREN RPAREN
@@ -263,6 +305,34 @@ def p_c_assign(p):
     c : c ASSIGN c
     '''
     p[0] = Assign(p[1], p[3])
+
+
+def p_c_public_assign(p):
+    '''
+    c : c PUBLIC ASSIGN c
+    '''
+    pass
+
+
+def p_c_private_assign(p):
+    '''
+    c : c PRIVATE ASSIGN c
+    '''
+    pass
+
+
+def p_c_protected_assign(p):
+    '''
+    c : c PROTECTED ASSIGN c
+    '''
+    pass
+
+
+def p_c_static_assign(p):
+    '''
+    c : c STATIC ASSIGN c
+    '''
+    pass
 
 
 # Error rule for syntax errors
