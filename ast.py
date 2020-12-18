@@ -86,6 +86,7 @@ class ClassInfo:
 class Object(ClassInfo):
     def __init__(self, name, classVars, methods, args, superClass):
         super().__init__(name, classVars, methods, superClass)
+        self.args = args  # store to make PrivateObject
         self.attributes = {}
         if self.constructor:
             # Insert self for "this" in constructor call
@@ -95,6 +96,7 @@ class Object(ClassInfo):
                 raise TypeError("Invalid number of arguments for constructor call")
             env = constructor.env
             env2 = {k.name: v.eval(env)[0] for (k, v) in zip(constructor.args, args)}
+            env2['this'] = PrivateObject(env2['this'])
             # Bind super to a pair, this and the superclass
             _, newEnv = constructor.expr.eval({**env2, **env, 'super': (self, superClass)})
             self.attributes = newEnv['this'].attributes
@@ -111,6 +113,30 @@ class Object(ClassInfo):
 
     def eval(self, env):
         return self, env
+
+
+class PrivateObject:
+    """
+    Class to represent objects with private access
+    """
+    def __init__(self, obj):
+        assert isinstance(obj, Object), "From_object expects an object"
+        self.obj = obj
+        self.attributes = obj.attributes
+        self.superClass = obj.superClass
+
+    def __getitem__(self, key):
+        return self.obj.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        self.obj.__setitem__(key, value)
+
+    def eval(self, env):
+        return self.obj.eval(env)
+
+    def __call__(self, args):
+        return self.obj.__call__(args)
+
 
 
 class PrivacyMod(Enum):
@@ -148,6 +174,7 @@ class Int(Expr):
     def __str__(self):
         return str(self.value)
 
+
 class String(Expr):
     def __init__(self, val):
         assert type(val) == str
@@ -172,6 +199,7 @@ class Index(Expr):
         ind, _ = self.ind.eval(env)
         assert type(obj) == str, 'Can only index a string'
         return obj[ind], env
+
 
 class Slice(Expr):
     def __init__(self, obj, start, end):
@@ -303,10 +331,13 @@ class Dot(Expr):
         if self.obj.name == 'super':
             (obj, cls) = classInfo
             return cls[attr][0].methodify(obj), newEnv
-        if isinstance(classInfo[attr], tuple) \
-                and isinstance(classInfo[attr][0], Closure) \
-                and isinstance(classInfo, Object):
-            return classInfo[attr][0].methodify(classInfo), newEnv
+        val = classInfo[attr]
+        if isinstance(val, tuple) and isinstance(val[0], Closure) and \
+                (isinstance(classInfo, Object) or isinstance(classInfo, PrivateObject)):
+            clos, access = val
+            if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
+                raise TypeError("Attempted to access private method in public context!")
+            return clos.methodify(classInfo), newEnv
         return classInfo[attr], newEnv
 
     def __str__(self):
@@ -392,6 +423,7 @@ class App(Expr):
                 raise TypeError("Number of arguments does not match number of parameters")
             env2 = {k.name: v.eval(env)[0] for (k, v) in zip(clos.args, newArgs)}
             if isinstance(clos, MethodClosure):
+                env2['this'] = PrivateObject(env2['this'])
                 if 'super' in env:
                     superClass = env['super'][1].superClass if env['super'][1] else None
                 else:
