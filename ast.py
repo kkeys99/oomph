@@ -138,7 +138,6 @@ class PrivateObject:
         return self.obj.__call__(args)
 
 
-
 class PrivacyMod(Enum):
     PRIVATE = 1
     PUBLIC = 2
@@ -221,7 +220,8 @@ class Slice(Expr):
         else:
             end = None
         assert type(obj) == str, 'Can only slice a string'
-        assert (type(start) == int or start is None) and (type(end) == int or end is None), "Slice indices must be integers"
+        assert (type(start) == int or start is None) and (type(end) == int or end is None),\
+            "Slice indices must be integers"
         if start is not None and end is not None:
             return obj[start:end], env
         if start is not None:
@@ -285,6 +285,10 @@ class Class(Expr):
             body.left = AccessFunction.fromFunc(body.left, PrivacyMod.PUBLIC)
         if isinstance(body.right, Function) and not isinstance(body.right, AccessFunction):
             body.right = AccessFunction.fromFunc(body.right, PrivacyMod.PUBLIC)
+        if isinstance(body.left, Assign) and not isinstance(body.left, AccessAssign):
+            body.left = AccessAssign.fromAssign(body.left, PrivacyMod.PUBLIC)
+        if isinstance(body.right, Assign) and not isinstance(body.right, AccessAssign):
+            body.right = AccessAssign.fromAssign(body.right, PrivacyMod.PUBLIC)
         return self.bodyIsOk(body.left) and self.bodyIsOk(body.right)
 
     def destructBody(self, body):
@@ -338,7 +342,9 @@ class Dot(Expr):
             if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
                 raise TypeError("Attempted to access private method in public context!")
             return clos.methodify(classInfo), newEnv
-        return classInfo[attr], newEnv
+        if isinstance(val, tuple):
+            return val[0], newEnv
+        return val, newEnv
 
     def __str__(self):
         return f"{self.obj}.{self.attr}"
@@ -411,9 +417,8 @@ class App(Expr):
     def eval(self, env):
         clos, env1 = self.func.eval(env)
         # Handle class methods
-        access = PrivacyMod.PUBLIC
         if isinstance(clos, tuple):
-            clos, access = clos
+            clos, _ = clos
         if isinstance(clos, Closure):
             # Copy the args, and if we have a method call, insert the object for "this"
             newArgs = self.args.copy()
@@ -586,7 +591,8 @@ class Skip(Expr):
 
 class Assign(Expr):
     def __init__(self, var, exp):
-        assert isinstance(var, Var) or isinstance(var, Dot), "Left side of an assignment statement must be a variable or dot operator"
+        assert isinstance(var, Var) or isinstance(var, Dot), \
+            "Left side of an assignment statement must be a variable or dot operator"
         assert isinstance(exp, Expr)
         self.var = var
         self.exp = exp
@@ -601,6 +607,26 @@ class Assign(Expr):
 
     def __str__(self):
         return f"{self.var} := {self.exp}"
+
+
+class AccessAssign(Assign):
+    def __init__(self, var, exp, access):
+        super().__init__(var, exp)
+        assert isinstance(access, PrivacyMod)
+        self.access = access
+
+    @classmethod
+    def fromAssign(cls, assign, access):
+        assert isinstance(assign, Assign)
+        return AccessAssign(assign.var, assign.exp, access)
+
+    def eval(self, env):
+        if isinstance(self.var, Var):
+            env[self.var.name] = self.exp.eval(env)[0], self.access
+        elif isinstance(self.var, Dot):
+            (obj, _), attr, (newval, _) = self.var.obj.eval(env), self.var.attr.name, self.exp.eval(env)
+            obj[attr] = newval, self.access
+        return (), env
 
 
 class Seq(Expr):

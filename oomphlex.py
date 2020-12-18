@@ -73,15 +73,18 @@ reserved_map = {}
 for r in reserved:
     reserved_map[r.lower()] = r
 
+
 def t_QUOTE(t):
     r'\'.*\''
     t.type = 'STRING'
     return t
 
+
 def t_DUBQUOTE(t):
     r'\".*\"'
     t.type = 'STRING'
     return t
+
 
 def t_ID(t):
     r'[A-Za-z_][\w_]*'
