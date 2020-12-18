@@ -1,0 +1,54 @@
+class A: {
+    def theAnswer(this): {
+        32
+    };
+
+    def setC(this, c): {
+        this.c := 4110
+    };
+
+    def constructor(this, a): {
+        this.a := a;
+        this.setC(99)
+    }
+};
+
+class B(A): {
+    def theAnswer(this): {
+        42
+    };
+
+    def setC(this, c): {
+        this.c := c
+    };
+    
+    def constructor(this, a, b): {
+        super.constructor(a);
+        this.b := b
+    }
+};
+
+class C(B): {
+    def theAnswer(this): {
+        super.theAnswer()
+    };
+
+    def setC(this, c): {
+        super.setC(c)
+    }
+};
+
+a := A(1);
+test(a.a = 1);
+test(a.c = 4110);
+test(a.theAnswer() = 32);
+
+b := B(1, 2);
+test(b.a = 1);
+test(b.b = 2);
+test(b.c = 99);
+
+c := C();
+test(c.theAnswer() = 42);
+c.setC(22);
+test(c.c = 22)

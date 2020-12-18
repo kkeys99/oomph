@@ -128,7 +128,13 @@ def p_c_class(p):
     '''
     c : CLASS VAR COLON LCURL c RCURL
     '''
-    p[0] = Class(Var(p[2]), p[5])
+    p[0] = Class(Var(p[2]), p[5], None)
+
+def p_c_subclass(p):
+    '''
+    c : CLASS VAR LPAREN VAR RPAREN COLON LCURL c RCURL
+    '''
+    p[0] = Class(Var(p[2]), p[8], Var(p[4]))
 
 
 def p_c_dot(p):
