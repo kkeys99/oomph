@@ -148,6 +148,37 @@ class Int(Expr):
     def __str__(self):
         return str(self.value)
 
+    def __eq__(self, other):
+        if not isinstance(other, Int):
+            return False
+        return self.value == other.value
+
+class List(Expr):
+    def __init__(self, val):
+        assert type(val) == list
+        self.value = val
+
+    def eval(self, env):
+        return [elt.eval(env)[0] for elt in self.value], env
+
+    def __eq__(self, other):
+        if not isinstance(other, List):
+            return False
+        return all([a == b for a, b in zip(self.value, other.value)])
+
+class Tuple(Expr):
+    def __init__(self, val):
+        assert type(val) == tuple
+        self.value = val
+
+    def eval(self, env):
+        return tuple(elt.eval(env)[0] for elt in self.value), env
+
+    def __eq__(self, other):
+        if not isinstance(other, List):
+            return False
+        return all([a == b for a, b in zip(self.value, other.value)])
+
 class String(Expr):
     def __init__(self, val):
         assert type(val) == str
@@ -158,6 +189,11 @@ class String(Expr):
     
     def __str__(self):
         return self.value
+
+    def __eq__(self, other):
+        if not isinstance(other, String):
+            return False
+        return self.value == other.value
 
 
 class Index(Expr):
@@ -170,7 +206,7 @@ class Index(Expr):
     def eval(self, env):
         obj, _ = self.obj.eval(env)
         ind, _ = self.ind.eval(env)
-        assert type(obj) == str, 'Can only index a string'
+        assert type(obj) in [str, list, tuple], 'Can only index a string or list'
         return obj[ind], env
 
 class Slice(Expr):
@@ -192,7 +228,7 @@ class Slice(Expr):
             end, _ = self.end.eval(env)
         else:
             end = None
-        assert type(obj) == str, 'Can only slice a string'
+        assert type(obj) in [str, list, tuple], 'Not a sliceable item'
         assert (type(start) == int or start is None) and (type(end) == int or end is None), "Slice indices must be integers"
         if start is not None and end is not None:
             return obj[start:end], env
@@ -210,6 +246,9 @@ class BTrue(Expr):
     def __str__(self):
         return "true"
 
+    def __eq__(self, other):
+        return isinstance(other, BTrue)
+
 
 class BFalse(Expr):
     def eval(self, env):
@@ -217,6 +256,9 @@ class BFalse(Expr):
 
     def __str__(self):
         return "false"
+
+    def __eq__(self, other):
+        return isinstance(other, BFalse)
 
 
 class Var(Expr):
@@ -553,7 +595,7 @@ class Skip(Expr):
 
 class Assign(Expr):
     def __init__(self, var, exp):
-        assert isinstance(var, Var) or isinstance(var, Dot), "Left side of an assignment statement must be a variable or dot operator"
+        assert isinstance(var, Var) or isinstance(var, Dot) or isinstance(var, Index) or isinstance(var, Slice), "Left side of an assignment statement must support assignment"
         assert isinstance(exp, Expr)
         self.var = var
         self.exp = exp
@@ -564,6 +606,27 @@ class Assign(Expr):
         elif isinstance(self.var, Dot):
             (obj, _), attr, (newval, _) = self.var.obj.eval(env), self.var.attr.name, self.exp.eval(env)
             obj[attr] = newval
+        elif isinstance(self.var, Index):
+            (obj, _), (ind, _), (newval, _) = self.var.obj.eval(env), self.var.ind.eval(env), self.exp.eval(env)
+            obj[ind] = newval
+        elif isinstance(self.var, Slice):
+            if self.var.start is not None:
+                start, _ = self.var.start.eval(env)
+            else:
+                start = None
+            if self.var.end is not None:
+                end, _ = self.var.end.eval(env)
+            else:
+                end = None
+            (obj, _), (newval, _) = self.var.obj.eval(env), self.exp.eval(env)
+            if start is not None and end is not None:
+                obj[start:end] = newval
+            elif start is not None:
+                obj[start:] = newval
+            elif end is not None:
+                obj[:end] = newval
+            else:
+                obj[:] = newval
         return (), env
 
     def __str__(self):

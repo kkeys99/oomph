@@ -1,0 +1,28 @@
+empty := (,);
+test(empty = (,));
+
+one := (1,);
+test(one = (1,));
+
+multi := (1,2,3);
+test(multi = (1,2,3));
+
+nested := (multi,[true, false], (,), 4, 5, 6);
+test(nested = ((1,2,3),[true, false], (,), 4, 5, 6));
+
+test(nested[0] = (1,2,3));
+test(nested[1] = [true, false]);
+test(nested[-1] = 6);
+test(nested[0][0] = 1);
+
+test(nested[-3:] = (4,5,6));
+test(nested[:1] = ((1,2,3),));
+test(nested[3:7] = (4,5,6));
+test(nested[:] = nested);
+
+nested[1][0] := false;
+nested[1][1] := true;
+test(nested = ((1,2,3),[false, true], (,), 4, 5, 6));
+
+six := (0,1,2,3) + (4,5,6);
+test(six = (0,1,2,3,4,5,6))

@@ -185,6 +185,35 @@ def p_c_dot(p):
     '''
     p[0] = Dot(p[1], Var(p[3]))
 
+def p_c_emptyList(p):
+    '''
+    c : LBRACE RBRACE
+    '''
+    p[0] = List([])
+
+def p_c_list(p):
+    '''
+    c : LBRACE exps RBRACE
+    '''
+    p[0] = List(p[2])
+
+def p_c_emptyTuple(p):
+    '''
+    c : LPAREN COMMA RPAREN
+    '''
+    p[0] = Tuple(tuple())
+    
+def p_c_oneTuple(p):
+    '''
+    c : LPAREN c COMMA RPAREN
+    '''
+    p[0] = Tuple((p[2],))
+
+def p_c_tuple(p):
+    '''
+    c : LPAREN exps RPAREN
+    '''
+    p[0] = Tuple(tuple(p[2]))
 
 def p_c_str(p):
     '''
