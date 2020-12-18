@@ -8,8 +8,8 @@ reserved = (
 )
 
 tokens = reserved + (
-    # Literals (variable, integer)
-    'VAR', 'INT',
+    # Literals (variable, integer, string)
+    'VAR', 'INT', 'STRING',
 
     # Operators (+, -, *, =, !=, <, <=, >, >=)
     'PLUS', 'MINUS', 'TIMES', 'EQUALS', 'NOTEQUALS', 'LESS', 'LESSEQ', 'GREATER', 'GREATEREQ', 
@@ -23,8 +23,8 @@ tokens = reserved + (
     # Object Accessor (.)
     'DOT',
 
-    # Delimiters ( ) ; : { }
-    'SEMI', 'LPAREN', 'RPAREN', 'COLON', 'COMMA', 'LCURL', 'RCURL',
+    # Delimiters ( ) ; : { } [ ]
+    'SEMI', 'LPAREN', 'RPAREN', 'COLON', 'COMMA', 'LCURL', 'RCURL', 'LBRACE', 'RBRACE',
 )
 
 # Completely ignored characters, space and tab
@@ -65,14 +65,23 @@ t_LPAREN           = r'\('
 t_RPAREN           = r'\)'
 t_LCURL            = r'{'
 t_RCURL            = r'}'
-# t_LBRACE           = r'\['
-# t_RBRACE           = r'\]'
+t_LBRACE           = r'\['
+t_RBRACE           = r'\]'
 
 # Variables and reserved words
 reserved_map = {}
 for r in reserved:
     reserved_map[r.lower()] = r
 
+def t_QUOTE(t):
+    r'\'.*\''
+    t.type = 'STRING'
+    return t
+
+def t_DUBQUOTE(t):
+    r'\".*\"'
+    t.type = 'STRING'
+    return t
 
 def t_ID(t):
     r'[A-Za-z_][\w_]*'

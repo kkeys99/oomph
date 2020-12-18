@@ -186,6 +186,42 @@ def p_c_dot(p):
     p[0] = Dot(p[1], Var(p[3]))
 
 
+def p_c_str(p):
+    '''
+    c : STRING
+    '''
+    p[0] = String(p[1][1:-1])
+
+def p_c_index(p):
+    '''
+    c : c LBRACE c RBRACE
+    '''
+    p[0] = Index(p[1], p[3])
+
+def p_c_slice(p):
+    '''
+    c : c LBRACE c COLON c RBRACE
+    '''
+    p[0] = Slice(p[1], p[3], p[5])
+
+def p_c_sliceEmpty(p):
+    '''
+    c : c LBRACE COLON RBRACE
+    '''
+    p[0] = Slice(p[1], None, None)
+
+def p_c_sliceStart(p):
+    '''
+    c : c LBRACE c COLON RBRACE
+    '''
+    p[0] = Slice(p[1], p[3], None)
+
+def p_c_sliceEnd(p):
+    '''
+    c : c LBRACE COLON c RBRACE
+    '''
+    p[0] = Slice(p[1], None, p[4])
+
 def p_c_int(p):
     '''
     c : INT

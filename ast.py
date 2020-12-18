@@ -148,6 +148,60 @@ class Int(Expr):
     def __str__(self):
         return str(self.value)
 
+class String(Expr):
+    def __init__(self, val):
+        assert type(val) == str
+        self.value = val
+
+    def eval(self, env):
+        return self.value, env
+    
+    def __str__(self):
+        return self.value
+
+
+class Index(Expr):
+    def __init__(self, obj, ind):
+        assert isinstance(obj, Expr)
+        assert isinstance(ind, Expr)
+        self.obj = obj
+        self.ind = ind
+
+    def eval(self, env):
+        obj, _ = self.obj.eval(env)
+        ind, _ = self.ind.eval(env)
+        assert type(obj) == str, 'Can only index a string'
+        return obj[ind], env
+
+class Slice(Expr):
+    def __init__(self, obj, start, end):
+        assert isinstance(obj, Expr)
+        assert isinstance(start, Expr) or start is None
+        assert isinstance(end, Expr) or end is None
+        self.obj = obj
+        self.start = start
+        self.end = end
+
+    def eval(self, env):
+        obj, _ = self.obj.eval(env)
+        if self.start is not None:
+            start, _ = self.start.eval(env)
+        else:
+            start = None
+        if self.end is not None:
+            end, _ = self.end.eval(env)
+        else:
+            end = None
+        assert type(obj) == str, 'Can only slice a string'
+        assert (type(start) == int or start is None) and (type(end) == int or end is None), "Slice indices must be integers"
+        if start is not None and end is not None:
+            return obj[start:end], env
+        if start is not None:
+            return obj[start:], env
+        if end is not None:
+            return obj[:end], env
+        return obj[:], env
+
 
 class BTrue(Expr):
     def eval(self, env):

@@ -1,0 +1,19 @@
+hello := "Hello There!";
+test(hello = "Hello There!");
+
+kenobi := 'General Kenobi!';
+test(kenobi = 'General Kenobi!');
+
+helloKenobi := hello + ' ' + kenobi;
+test(helloKenobi = "Hello There! General Kenobi!");
+
+test(helloKenobi[0] = 'H');
+test(helloKenobi[1] = 'e');
+test(helloKenobi[-1] = "!");
+test('Good morning!'[0] = 'G');
+
+test(helloKenobi[0:5] = 'Hello');
+test(helloKenobi[-7:-1] = "Kenobi");
+test(helloKenobi[:5] = 'Hello');
+test(helloKenobi[-7:] = "Kenobi!");
+test(helloKenobi[:] = helloKenobi)
