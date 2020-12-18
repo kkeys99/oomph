@@ -1,0 +1,16 @@
+class Student: {
+    universityId := 538;
+    def constructor(this, sid, gpa, smart): {
+        this.sid := sid + 1;
+        this.gpa := gpa;
+        this.smart := smart
+    };
+    def private getSidPriv(this): {
+        this.sid
+    };
+    def public getSidPub(this): {
+        this.getSidPriv()
+    }
+};
+goodStudent := Student(123, 4, true);
+test(goodStudent.getSidPub() = 124)
