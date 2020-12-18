@@ -178,6 +178,7 @@ class Int(Expr):
             return False
         return self.value == other.value
 
+
 class List(Expr):
     def __init__(self, val):
         assert type(val) == list
@@ -191,6 +192,7 @@ class List(Expr):
             return False
         return all([a == b for a, b in zip(self.value, other.value)])
 
+
 class Tuple(Expr):
     def __init__(self, val):
         assert type(val) == tuple
@@ -203,6 +205,7 @@ class Tuple(Expr):
         if not isinstance(other, List):
             return False
         return all([a == b for a, b in zip(self.value, other.value)])
+
 
 class String(Expr):
     def __init__(self, val):
@@ -383,7 +386,10 @@ class Dot(Expr):
                 raise TypeError("Attempted to access private method in public context!")
             return clos.methodify(classInfo), newEnv
         if isinstance(val, tuple):
-            return val[0], newEnv
+            v, access = val
+            if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
+                raise TypeError("Attempted to access private variable in public context!")
+            return v, newEnv
         return val, newEnv
 
     def __str__(self):
@@ -686,6 +692,27 @@ class AccessAssign(Assign):
         elif isinstance(self.var, Dot):
             (obj, _), attr, (newval, _) = self.var.obj.eval(env), self.var.attr.name, self.exp.eval(env)
             obj[attr] = newval, self.access
+        elif isinstance(self.var, Index):
+            (obj, _), (ind, _), (newval, _) = self.var.obj.eval(env), self.var.ind.eval(env), self.exp.eval(env)
+            obj[ind] = newval
+        elif isinstance(self.var, Slice):
+            if self.var.start is not None:
+                start, _ = self.var.start.eval(env)
+            else:
+                start = None
+            if self.var.end is not None:
+                end, _ = self.var.end.eval(env)
+            else:
+                end = None
+            (obj, _), (newval, _) = self.var.obj.eval(env), self.exp.eval(env)
+            if start is not None and end is not None:
+                obj[start:end] = newval
+            elif start is not None:
+                obj[start:] = newval
+            elif end is not None:
+                obj[:end] = newval
+            else:
+                obj[:] = newval
         return (), env
 
 
