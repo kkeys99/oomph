@@ -94,12 +94,12 @@ class ClassInfo:
     def __setitem__(self, key, value):
         self.classVars[key] = value
 
-    def __call__(self, args):
-        return Object(self.name, self.classVars, self.methods, args, self.superClass)
+    def __call__(self, args, env):
+        return Object(self.name, self.classVars, self.methods, args, self.superClass, env)
 
 
 class Object(ClassInfo):
-    def __init__(self, name, classVars, methods, args, superClass):
+    def __init__(self, name, classVars, methods, args, superClass, env):
         super().__init__(name, classVars, methods, superClass)
         self.args = args  # store to make PrivateObject
         self.attributes = {}
@@ -109,7 +109,6 @@ class Object(ClassInfo):
             constructor = self.constructor[0] if type(self.constructor) == tuple else self.constructor
             if len(constructor.args) != len(args):
                 raise TypeError("Invalid number of arguments for constructor call")
-            env = constructor.env
             env2 = {k.name: v.eval(env)[0] for (k, v) in zip(constructor.args, args)}
             env2['this'] = PrivateObject(env2['this'])
             # Bind super to a pair, this and the superclass
@@ -532,7 +531,7 @@ class App(Expr):
         # Handle constructor calls
         if isinstance(clos, ClassInfo):
             # Create a new object
-            obj = clos(self.args)
+            obj = clos(self.args, env)
             return obj, env1
 
         raise NotAFunction(self.func)

@@ -34,10 +34,10 @@ class PhD: {
             cond2 := this.advisor1 = p.advisor2 and this.advisor1 != null and p.advisor2 != null;
             cond3 := this.advisor2 = p.advisor1 and this.advisor2 != null and p.advisor1 != null;
             cond4 := this.advisor2 = p.advisor2 and this.advisor2 != null and p.advisor2 != null;
-            this != p and (cond1 or cond2 or cond3 or cond4)
+            this.name != p.name and (cond1 or cond2 or cond3 or cond4)
         }
     }
 };
-gries := PhD("David Gries", 5, 1960, null, null);
-walker := PhD("Walker White", 9, 2000, gries, null);
-clarkson := PhD("Michael Clarkson", 3, 2010, gries, null)
+church := PhD("Alonzo Church", 1927, 12, null, null);
+gries := PhD("David Gries", 5, 1960, church, null);
+walker := PhD("Walker White", 9, 2000, gries, null)

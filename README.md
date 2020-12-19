@@ -17,3 +17,19 @@ python main.py -f input.oomph
 ```
 
 You can also run the interpreter interactively by executing `repl.py`. Files in the tests directory can be run by executing `test.py`.
+
+### Demo
+
+A simple demo for the language can be seen by executing `demo.py` as a script. It reads in the program from `demo.oomph`, making use of a simple PhD class.
+The PhD class has some simple methods such as gotAfter, which returns true if the object you call the method on got their PhD after the argument, and areSiblings,
+which returns true if the object you call the method on is an intellectual sibling of the argument (i.e. they share an advisor).
+Here are some examples of what you can do with the variables loaded in to the demo:
+
+```
+gries.gotAfter(church)
+walker.gotAfter(gries)
+clarkson := PhD("Michael Clarkson", 3, 2010, gries, null)
+clarkson.areSiblings(walker)
+```
+
+To exit the demo, simply press the EOF key on your keyboard.
