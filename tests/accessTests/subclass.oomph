@@ -1,0 +1,84 @@
+class Cornellian: {
+    cornellian_type := 0;
+    def constructor(this, net): {
+        this.netID := net
+    }
+};
+
+class Employee(Cornellian): {
+    employee_type protected := 0;
+    employee_name protected := "bob";
+    def constructor(this, netID, salary): {
+        super.constructor(netID);
+        this.salary := salary
+    };
+    def setName(this, name): {
+        this.employee_name := name
+    };
+    def getName(this): {
+        this.employee_name
+    }
+};
+
+class CISFaculty(Employee): {
+    cisfaculty_type := 0;
+    def constructor(this, netID, salary, courseNum): {
+        super.constructor(netID, salary);
+        this.course := courseNum
+    };
+    def getEType(this): {
+        this.employee_type
+    }
+};
+
+class Janitor(Employee): {
+    janitor_type := 0;
+    def constructor(this, netID, salary, roomNum): {
+        super.constructor(netID, salary);
+        this.assignedRoom := roomNum
+    }
+};
+
+class Student(Cornellian): {
+    student_type := 0;
+    def constructor(this, netID, sid, fave, classOf): {
+        super.constructor(netID);
+        this.studentID := sid;
+        this.favoriteClass := fave;
+        this.classYear := classOf
+    }
+};
+
+kevin := Student(123, 456, 4110, 21);
+test(kevin.netID = 123);
+test(kevin.studentID = 456);
+test(kevin.favoriteClass = 4110);
+test(kevin.classYear = 21);
+test(kevin.student_type = 0);
+test(kevin.cornellian_type = 0);
+
+ezra := Cornellian(0);
+test(ezra.netID = 0);
+test(ezra.cornellian_type = 0);
+
+martha := Employee(397, 10000000);
+test(martha.netID = 397);
+test(martha.salary = 10000000);
+test(martha.cornellian_type = 0);
+
+nate := CISFaculty(42, 150000, 4110);
+test(nate.netID = 42);
+test(nate.salary = 150000);
+test(nate.course = 4110);
+test(nate.cisfaculty_type = 0);
+test(nate.cornellian_type = 0);
+test(nate.getEType() = 0);
+nate.setName("nate");
+test(nate.getName() = "nate");
+
+jan := Janitor(5, 40000, 68);
+test(jan.netID = 5);
+test(jan.salary = 40000);
+test(jan.assignedRoom = 68);
+test(jan.janitor_type = 0);
+test(jan.cornellian_type = 0)

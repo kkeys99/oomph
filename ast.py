@@ -69,11 +69,26 @@ class ClassInfo:
         Note that methods will shadow class variables because of this
         """
         if key in self.methods:
+            return self.methods[key], AttrOwner.THIS
+        if key in self.classVars:
+            return self.classVars[key], AttrOwner.THIS
+        if self.superClass is not None:
+            (val, access), owner = self.superClass[key]
+            if access == PrivacyMod.PRIVATE:
+                raise TypeError("Subclass can not access private fields of superclass!")
+            return (val, access), AttrOwner.SUPER
+        raise AttributeError(key)
+
+    def get_owned(self, key, owner):
+        if key in self.methods:
             return self.methods[key]
         if key in self.classVars:
             return self.classVars[key]
         if self.superClass is not None:
-            return self.superClass[key]
+            val, access = self.superClass[key]
+            if access == PrivacyMod.PRIVATE and owner != AttrOwner.SUPER:
+                raise TypeError("Subclass can not access private fields of superclass!")
+            return val, access
         raise AttributeError(key)
 
     def __setitem__(self, key, value):
@@ -141,12 +156,18 @@ class PrivateObject:
 class PrivacyMod(Enum):
     PRIVATE = 1
     PUBLIC = 2
-    PROTECTED = 3  # Might not need
+    PROTECTED = 3
 
 
 class AccessMod(Enum):
     STATIC = 1
     NONSTATIC = 2
+
+
+class AttrOwner(Enum):
+    SUPER = 1
+    THIS = 2
+    SUB = 3  # Do we need?
 
 
 class Expr:
@@ -397,8 +418,12 @@ class Dot(Expr):
         classInfo, newEnv = self.obj.eval(env)
         if self.obj.name == 'super':
             (obj, cls) = classInfo
-            return cls[attr][0].methodify(obj), newEnv
+            return cls[attr][0][0].methodify(obj), newEnv
+
         val = classInfo[attr]
+        owner = AttrOwner.THIS
+        if isinstance(val, tuple):
+            val, owner = val
         if isinstance(val, tuple) and isinstance(val[0], Closure) and \
                 (isinstance(classInfo, Object) or isinstance(classInfo, PrivateObject)):
             clos, access = val
@@ -406,6 +431,8 @@ class Dot(Expr):
                 raise TypeError("Attempted to access private method in public context!")
             return clos.methodify(classInfo), newEnv
         if isinstance(val, tuple):
+            if isinstance(val[0], tuple):
+                val, owner = val
             v, access = val
             if access != PrivacyMod.PUBLIC and not isinstance(classInfo, PrivateObject):
                 raise TypeError("Attempted to access private variable in public context!")
@@ -484,6 +511,7 @@ class App(Expr):
         clos, env1 = self.func.eval(env)
         # Handle class methods
         if isinstance(clos, tuple):
+            print(clos)
             clos, _ = clos
         if isinstance(clos, Closure):
             # Copy the args, and if we have a method call, insert the object for "this"
@@ -641,7 +669,7 @@ class Or(BinExp):
 
 class Null(Expr):
     def eval(self, env):
-        return (), env
+        return None, env
 
     def __str__(self):
         return "null"
@@ -712,27 +740,8 @@ class AccessAssign(Assign):
         elif isinstance(self.var, Dot):
             (obj, _), attr, (newval, _) = self.var.obj.eval(env), self.var.attr.name, self.exp.eval(env)
             obj[attr] = newval, self.access
-        elif isinstance(self.var, Index):
-            (obj, _), (ind, _), (newval, _) = self.var.obj.eval(env), self.var.ind.eval(env), self.exp.eval(env)
-            obj[ind] = newval
-        elif isinstance(self.var, Slice):
-            if self.var.start is not None:
-                start, _ = self.var.start.eval(env)
-            else:
-                start = None
-            if self.var.end is not None:
-                end, _ = self.var.end.eval(env)
-            else:
-                end = None
-            (obj, _), (newval, _) = self.var.obj.eval(env), self.exp.eval(env)
-            if start is not None and end is not None:
-                obj[start:end] = newval
-            elif start is not None:
-                obj[start:] = newval
-            elif end is not None:
-                obj[:end] = newval
-            else:
-                obj[:] = newval
+        elif isinstance(self.var, Index) or isinstance(self.var, Slice):
+            super().eval(env)
         return (), env
 
 
@@ -802,7 +811,7 @@ class Test(Expr):
 
     def eval(self, env):
         b = self.exp.eval(env)
-        assert b[0], f'Test expression {b} evaluated to false!'
+        assert b[0], f'Test expression {self.exp} evaluated to false!'
         return (), env
 
     def __str__(self):

@@ -19,6 +19,7 @@ class LinkedList: {
     };
 
     def set(this, index, element): {
+        print(this.head = null);
         this.head := null
     };
 
@@ -38,6 +39,7 @@ class LinkedList: {
         this.head := null
     }
 };
+
 
 lst := LinkedList();
 lst.add(2);
