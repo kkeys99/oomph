@@ -239,6 +239,12 @@ def p_c_tuple(p):
     '''
     p[0] = Tuple(tuple(p[2]))
 
+def p_c_null(p):
+    '''
+    c : NULL
+    '''
+    p[0] = Null()
+
 def p_c_str(p):
     '''
     c : STRING
