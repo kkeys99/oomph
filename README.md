@@ -16,7 +16,7 @@ To run an OOMP(H) file, simply execute `main.py` giving the file to run as an ar
 python main.py -f input.oomph
 ```
 
-You can also run the interpreter interactively by executing `repl.py`. Files in the tests directory can be run by executing `test.py`.
+You can also run the interpreter interactively by executing `repl.py`. Files in the tests directory can be run by executing `test.py`. A manual explaining basic OOMPH syntax can be found in manual.md. 
 
 ### Demo
 
