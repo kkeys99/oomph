@@ -1,0 +1,46 @@
+class Node: {
+    def constructor(this, value): {
+        this.value := value
+    }
+};
+
+class LinkedList: {
+    def constructor(this): {
+        this.head := null;
+        this.size := 0
+    };
+    
+    def add(this, element): {
+        if (this.head = null) {
+            this.head := Node(element)
+        } else {
+            skip
+        }
+    };
+
+    def set(this, index, element): {
+        print(this.head = null);
+        this.head := null
+    };
+
+    def remove(this, index): {
+        this.head := null
+    };
+
+    def indexOf(this, obj): {
+        this.head := null
+    };
+
+    def clear(this): {
+        this.head := null
+    };
+
+    def size(this): {
+        this.head := null
+    }
+};
+
+
+lst := LinkedList();
+lst.add(2);
+test(lst.head.value = 2)

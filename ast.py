@@ -667,12 +667,12 @@ class Or(BinExp):
         return f"{self.left} or {self.right}"
 
 
-class Unit(Expr):
+class Null(Expr):
     def eval(self, env):
-        return (), env
+        return None, env
 
     def __str__(self):
-        return "unit"
+        return "null"
 
 
 class Skip(Expr):

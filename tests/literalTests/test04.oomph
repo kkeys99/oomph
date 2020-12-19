@@ -13,4 +13,8 @@ test(dict[4] = 'e');
 test(dict = {1 : 'a', 2 : 'b', 4 : 'e', 3 : 'c'});
 
 empty := {};
-test(empty = {})
+test(empty = {});
+
+nothing := null;
+test(nothing = null);
+test(empty != null)

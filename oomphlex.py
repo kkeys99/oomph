@@ -4,7 +4,7 @@ from ply import lex
 reserved = (
     'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'ELSE', 
     'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS', 'FUN', 'STATIC', 'PRIVATE',
-    'PUBLIC', 'PROTECTED',
+    'PUBLIC', 'PROTECTED', 'NULL',
 )
 
 tokens = reserved + (
