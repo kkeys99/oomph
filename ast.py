@@ -106,7 +106,7 @@ class Object(ClassInfo):
         if self.constructor:
             # Insert self for "this" in constructor call
             args.insert(0, self)
-            constructor = self.constructor[0]
+            constructor = self.constructor[0] if type(self.constructor) == tuple else self.constructor
             if len(constructor.args) != len(args):
                 raise TypeError("Invalid number of arguments for constructor call")
             env = constructor.env

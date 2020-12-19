@@ -1,46 +1,43 @@
-class Node: {
-    def constructor(this, value): {
-        this.value := value
-    }
-};
-
-class LinkedList: {
-    def constructor(this): {
-        this.head := null;
-        this.size := 0
-    };
-    
-    def add(this, element): {
-        if (this.head = null) {
-            this.head := Node(element)
+class PhD: {
+    def constructor(this, n, m, y, a1, a2): {
+        this.name := n;
+        this.month := m;
+        this.year := y;
+        this.advisor1 := a1;
+        this.advisor2 := a2;
+        this.advisees := 0;
+        if (a1 != null) {
+            a1.advisees := a1.advisees + 1
+        } else {
+            skip
+        };
+        if (a2 != null) {
+            a2.advisees := a2.advisees + 1
         } else {
             skip
         }
     };
 
-    def set(this, index, element): {
-        print(this.head = null);
-        this.head := null
+    def hasAdvisee(this): {
+        this.advisees > 0
     };
 
-    def remove(this, index): {
-        this.head := null
+    def gotAfter(this, p): {
+        p != null and ((this.year > p.year) or (this.year = p.year and this.month > p.month))
     };
 
-    def indexOf(this, obj): {
-        this.head := null
-    };
-
-    def clear(this): {
-        this.head := null
-    };
-
-    def size(this): {
-        this.head := null
+    def areSiblings(this, p): {
+        if (p = null) {
+            false
+        } else {
+            cond1 := this.advisor1 = p.advisor1 and this.advisor1 != null and p.advisor1 != null;
+            cond2 := this.advisor1 = p.advisor2 and this.advisor1 != null and p.advisor2 != null;
+            cond3 := this.advisor2 = p.advisor1 and this.advisor2 != null and p.advisor1 != null;
+            cond4 := this.advisor2 = p.advisor2 and this.advisor2 != null and p.advisor2 != null;
+            this != p and (cond1 or cond2 or cond3 or cond4)
+        }
     }
 };
-
-
-lst := LinkedList();
-lst.add(2);
-test(lst.head.value = 2)
+gries := PhD("David Gries", 5, 1960, null, null);
+walker := PhD("Walker White", 9, 2000, gries, null);
+clarkson := PhD("Michael Clarkson", 3, 2010, gries, null)
