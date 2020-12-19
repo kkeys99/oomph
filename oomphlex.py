@@ -4,7 +4,7 @@ from ply import lex
 reserved = (
     'TRUE', 'FALSE', 'NOT', 'AND', 'OR', 'SKIP', 'BREAK', 'CONTINUE', 'IF', 'ELSE', 
     'WHILE', 'TEST', 'INPUT', 'PRINT', 'DEF', 'CLASS', 'FUN', 'STATIC', 'PRIVATE',
-    'PUBLIC', 'PROTECTED'
+    'PUBLIC', 'PROTECTED',
 )
 
 tokens = reserved + (
@@ -75,13 +75,13 @@ for r in reserved:
 
 
 def t_QUOTE(t):
-    r'\'.*\''
+    r'\'[^\']*\''
     t.type = 'STRING'
     return t
 
 
 def t_DUBQUOTE(t):
-    r'\".*\"'
+    r'\"[^\"]*\"'
     t.type = 'STRING'
     return t
 

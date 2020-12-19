@@ -201,6 +201,30 @@ def p_c_list(p):
     '''
     p[0] = List(p[2])
 
+def p_c_dictExps(p):
+    '''
+    dexps : c COLON c
+          | c COLON c COMMA dexps
+    '''
+    if len(p) == 4:
+        p[0] = [(p[1], p[3])]
+    else:
+        p[0] = [(p[1], p[3])] + p[5]
+
+
+def p_c_emptyDict(p):
+    '''
+    c : LCURL RCURL
+    '''
+    p[0] = Dict([])
+
+
+def p_c_dict(p):
+    '''
+    c : LCURL dexps RCURL
+    '''
+    p[0] = Dict(p[2])
+
 
 def p_c_emptyTuple(p):
     '''
