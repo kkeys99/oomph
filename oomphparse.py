@@ -8,6 +8,7 @@ precedence = (
     ('left', 'SEMI'),
     ('right', 'COLON', 'ARROW'),
     ('nonassoc', 'ASSIGN'),
+    ('nonassoc', 'PRIVATE', 'PUBLIC', 'PROTECTED'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQUALS', 'NOTEQUALS'),
@@ -139,8 +140,7 @@ def p_c_protected_fun(p):
     '''
     c : DEF PROTECTED VAR LPAREN vars RPAREN COLON LCURL c RCURL
     '''
-    # p[0] = AccessFunction(Var(p[3]), p[5], p[9], PrivacyMod.PROTECTED)
-    pass
+    p[0] = AccessFunction(Var(p[3]), p[5], p[9], PrivacyMod.PROTECTED)
 
 
 def p_c_emptyApp(p):
@@ -187,11 +187,13 @@ def p_c_dot(p):
     '''
     p[0] = Dot(p[1], Var(p[3]))
 
+
 def p_c_emptyList(p):
     '''
     c : LBRACE RBRACE
     '''
     p[0] = List([])
+
 
 def p_c_list(p):
     '''
@@ -199,23 +201,27 @@ def p_c_list(p):
     '''
     p[0] = List(p[2])
 
+
 def p_c_emptyTuple(p):
     '''
     c : LPAREN COMMA RPAREN
     '''
     p[0] = Tuple(tuple())
-    
+
+
 def p_c_oneTuple(p):
     '''
     c : LPAREN c COMMA RPAREN
     '''
     p[0] = Tuple((p[2],))
 
+
 def p_c_tuple(p):
     '''
     c : LPAREN exps RPAREN
     '''
     p[0] = Tuple(tuple(p[2]))
+
 
 def p_c_str(p):
     '''
@@ -404,8 +410,7 @@ def p_c_protected_assign(p):
     '''
     c : c PROTECTED ASSIGN c
     '''
-    # p[0] = AccessAssign(p[1], p[4], PrivacyMod.PROTECTED)
-    pass
+    p[0] = AccessAssign(p[1], p[4], PrivacyMod.PROTECTED)
 
 
 def p_c_static_assign(p):
