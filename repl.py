@@ -19,9 +19,8 @@ def main():
         try:
             v, env = result.eval(env)
             print(">> " + str(v))
-        except ast.UnboundVariable as e:
-            print(e.message)
-        except AttributeError:
+        except Exception as e:
+            print(repr(e))
             print("Invalid input")
 
     # print(prog)
