@@ -112,7 +112,7 @@ class Object(ClassInfo):
             env2 = {k.name: v.eval(env)[0] for (k, v) in zip(constructor.args, args)}
             env2['this'] = PrivateObject(env2['this'])
             # Bind super to a pair, this and the superclass
-            _, newEnv = constructor.expr.eval({**env2, **env, 'super': (self, superClass)})
+            _, newEnv = constructor.expr.eval({**env, **env2, 'super': (self, superClass)})
             self.attributes = newEnv['this'].attributes
         elif len(args) > 0:
             raise TypeError("Constructor takes no arguments")
